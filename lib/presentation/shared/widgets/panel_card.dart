@@ -54,35 +54,37 @@ class PanelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasHeader = title != null || index != null || trailing != null;
+    final hasAccent = accent != null;
 
+    // A barra lateral colorida é desenhada como `Border(left: 4)` em vez de
+    // um Row(stretch) com Container(width:4). Solução estável: o Border é
+    // intrínseco ao Container e não exige altura conhecida — funciona OK
+    // em ListView/Column de altura infinita.
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
-        border: Border.all(color: AppColors.slate200, width: 1),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (accent != null)
-            Container(
-              width: 4,
-              decoration: BoxDecoration(color: _accentColor),
-            ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (hasHeader) _Header(
-                  title: title,
-                  subtitle: subtitle,
-                  index: index,
-                  trailing: trailing,
-                ),
-                Padding(padding: padding, child: child),
-              ],
-            ),
+        border: Border(
+          top: const BorderSide(color: AppColors.slate200, width: 1),
+          right: const BorderSide(color: AppColors.slate200, width: 1),
+          bottom: const BorderSide(color: AppColors.slate200, width: 1),
+          left: BorderSide(
+            color: hasAccent ? _accentColor : AppColors.slate200,
+            width: hasAccent ? 4 : 1,
           ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasHeader)
+            _Header(
+              title: title,
+              subtitle: subtitle,
+              index: index,
+              trailing: trailing,
+            ),
+          Padding(padding: padding, child: child),
         ],
       ),
     );

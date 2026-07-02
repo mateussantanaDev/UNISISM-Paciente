@@ -15,7 +15,34 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>unisism_paciente</string>
+	<string>UNISISM Paciente</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Receba avisos sobre seu encaminhamento, agendamentos e respostas da Secretaria de Saúde.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Salvar documentos médicos baixados (laudos, exames, encaminhamentos).</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Mostrar a localização da sua UBS e ajudar a chegar até ela.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>https</string>
+		<string>whatsapp</string>
+		<string>maps</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

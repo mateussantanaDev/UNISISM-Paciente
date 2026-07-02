@@ -44,16 +44,81 @@ class Notificacao {
         tone: tone,
       );
 
-  factory Notificacao.fromJson(Map<String, dynamic> j) => Notificacao(
-        id: j['id'] as String,
-        tipo: j['tipo'] as String,
-        titulo: j['titulo'] as String,
-        corpo: j['corpo'] as String,
-        em: DateTime.parse(j['em'] as String),
-        lida: (j['lida'] as bool?) ?? false,
-        deepLink: j['deepLink'] as String?,
-        encaminhamentoId: j['encaminhamentoId'] as String?,
-        tfdSolicitacaoId: j['tfdSolicitacaoId'] as String?,
-        tone: (j['tone'] as String?) ?? 'INFO',
-      );
+  /// Aceita **dois shapes**:
+  ///
+  /// **Backend** (`GET /v1/paciente-app/notificacoes`):
+  /// ```json
+  /// {
+  ///   "id": "...",
+  ///   "tipo": "APROVADO",
+  ///   "titulo": "...",
+  ///   "corpo": "...",
+  ///   "encaminhamentoId": "...",
+  ///   "criadaEm": "...",
+  ///   "lidaEm": null
+  /// }
+  /// ```
+  ///
+  /// **Shape interno** (mock): `{em, lida: bool, deepLink, tone}`.
+  ///
+  /// Adaptações:
+  /// - `criadaEm` → `em`
+  /// - `lidaEm != null` → `lida: bool`
+  /// - `tipo` backend (ex `APROVADO`, `PENDENCIA_REGISTRADA`) → categoria reduzida do app
+  /// - `tone` derivado do `tipo` se backend não enviar explícito
+  /// - `deepLink` derivado de `encaminhamentoId` quando ausente
+  factory Notificacao.fromJson(Map<String, dynamic> j) {
+    final tipoRaw = (j['tipo'] as String?) ?? 'SISTEMA';
+    final encId = j['encaminhamentoId'] as String?;
+    final emRaw = (j['em'] ?? j['criadaEm']) as String?;
+    final lidaExplicit = j['lida'] as bool?;
+    final lidaEm = j['lidaEm'] as String?;
+    return Notificacao(
+      id: j['id'] as String,
+      tipo: _mapTipoCategoria(tipoRaw),
+      titulo: j['titulo'] as String,
+      corpo: j['corpo'] as String,
+      em: emRaw != null ? DateTime.parse(emRaw) : DateTime.now(),
+      lida: lidaExplicit ?? (lidaEm != null),
+      deepLink: (j['deepLink'] as String?) ??
+          (encId != null ? '/encaminhamento/$encId' : null),
+      encaminhamentoId: encId,
+      tfdSolicitacaoId: j['tfdSolicitacaoId'] as String?,
+      tone: (j['tone'] as String?) ?? _toneFromTipo(tipoRaw),
+    );
+  }
+
+  /// Mapeia tipos ricos do backend (`APROVADO`, `PENDENCIA_REGISTRADA`, etc.)
+  /// para categoria visual do app (`ENCAMINHAMENTO`, `TFD`, `CAMPANHA`, `ALERTA`, `SISTEMA`).
+  static String _mapTipoCategoria(String backend) {
+    if (backend.startsWith('ENCAMINHAMENTO_') ||
+        backend == 'APROVADO' ||
+        backend == 'REJEITADO' ||
+        backend == 'AGENDADO' ||
+        backend == 'PENDENCIA_REGISTRADA' ||
+        backend == 'PENDENCIA_RESOLVIDA' ||
+        backend == 'RESPOSTA_SUS_DISPONIVEL') {
+      return 'ENCAMINHAMENTO';
+    }
+    if (backend.startsWith('TFD')) return 'TFD';
+    if (backend == 'CAMPANHA' || backend == 'BANNER') return 'CAMPANHA';
+    if (backend == 'ALERTA') return 'ALERTA';
+    return 'SISTEMA';
+  }
+
+  static String _toneFromTipo(String backend) {
+    switch (backend) {
+      case 'APROVADO':
+      case 'PENDENCIA_RESOLVIDA':
+      case 'RESPOSTA_SUS_DISPONIVEL':
+      case 'AGENDADO':
+        return 'SUCCESS';
+      case 'PENDENCIA_REGISTRADA':
+        return 'WARNING';
+      case 'REJEITADO':
+        return 'CRITICAL';
+      default:
+        return 'INFO';
+    }
+  }
 }

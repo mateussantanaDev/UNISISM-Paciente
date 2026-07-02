@@ -33,9 +33,11 @@ class _DossieExamesPageState extends ConsumerState<DossieExamesPage> {
       ),
       body: async.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(examesProvider),
+        error: (_, __) => const EmptyView(
+          icon: Icons.science_outlined,
+          title: 'Sem exames registrados',
+          message:
+              'Seus exames aparecem aqui quando o resultado for lançado pela rede.',
         ),
         data: (lista) {
           if (lista.isEmpty) {
@@ -231,12 +233,16 @@ class _ExameCard extends StatelessWidget {
     final fmt = DateFormat("dd/MM/yyyy", 'pt_BR');
     final alterado = e.alterado;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border.all(color: AppColors.slate200, width: 1),
-      ),
-      child: Column(
+    return Material(
+      color: AppColors.white,
+      child: InkWell(
+        onTap: () => context.push('/dossie/exame/${e.id}'),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            border: Border.all(color: AppColors.slate200, width: 1),
+          ),
+          child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Faixa lateral colorida no topo
@@ -302,6 +308,17 @@ class _ExameCard extends StatelessWidget {
                   icon: Icons.person_outline,
                   text: 'Solicitado por ${e.solicitanteNome}',
                 ),
+                if (e.unidadeExecutora != null &&
+                    e.unidadeExecutora!.isNotEmpty)
+                  _Meta(
+                    icon: Icons.local_hospital_outlined,
+                    text: e.unidadeExecutora!,
+                  ),
+                if (e.categoria != null && e.categoria!.isNotEmpty)
+                  _Meta(
+                    icon: Icons.category_outlined,
+                    text: _categoriaLabel(e.categoria!),
+                  ),
 
                 const SizedBox(height: AppSpacing.md),
 
@@ -333,7 +350,7 @@ class _ExameCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        e.resultadoResumo,
+                        e.resultadoResumo ?? 'Aguardando resultado',
                         style: AppTypography.bodyMedium.copyWith(
                           color: AppColors.slate900,
                           fontWeight: FontWeight.w500,
@@ -347,7 +364,24 @@ class _ExameCard extends StatelessWidget {
           ),
         ],
       ),
+        ),
+      ),
     );
+  }
+}
+
+String _categoriaLabel(String c) {
+  switch (c.toUpperCase()) {
+    case 'LABORATORIAL':
+      return 'Laboratorial';
+    case 'IMAGEM':
+      return 'Imagem';
+    case 'FUNCIONAL':
+      return 'Funcional';
+    case 'OUTROS':
+      return 'Outros';
+    default:
+      return c;
   }
 }
 

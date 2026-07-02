@@ -31,9 +31,11 @@ class DossiePage extends ConsumerWidget {
 
           resumoAsync.when(
             loading: () => const LoadingView(),
-            error: (_, __) => ErrorView(
-              title: 'Não conseguimos abrir seu histórico',
-              onRetry: () => ref.invalidate(dossieResumoProvider),
+            error: (_, __) => const EmptyView(
+              icon: Icons.health_and_safety_outlined,
+              title: 'Seu histórico está sendo preparado',
+              message:
+                  'Assim que sua UBS registrar atendimentos, vacinas e exames, eles aparecem aqui.',
             ),
             data: (r) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

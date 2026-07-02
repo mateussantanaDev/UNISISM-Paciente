@@ -1,57 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../data/models/encaminhamento.dart';
+import '../../../providers/encaminhamento_controller.dart';
 import '../../shared/widgets/widgets.dart';
 
-/// Lista de encaminhamentos — **dados hard-coded, sem providers**.
-class EncaminhamentosListPage extends StatelessWidget {
+/// Lista de encaminhamentos — **100% backend real** via
+/// `encaminhamentosProvider` (`GET /paciente-app/meus-encaminhamentos`).
+///
+/// Status terminais (CONCLUIDO/REJEITADO/CANCELADO) vão pra "Histórico";
+/// resto entra em "Em andamento". Sem encaminhamentos: estado vazio amigável.
+class EncaminhamentosListPage extends ConsumerWidget {
   const EncaminhamentosListPage({super.key});
 
+  static const _statusTerminais = {'CONCLUIDO', 'REJEITADO', 'CANCELADO'};
+
   @override
-  Widget build(BuildContext context) {
-    final agora = DateTime.now();
-
-    final ativos = <_Item>[
-      _Item(
-        id: 'enc-100137',
-        protocolo: 'UBS-2026-100137',
-        especialidade: 'Cardiologia',
-        status: 'AGENDADO',
-        prioridade: 'PRIORITARIA',
-        criadoEm: agora.subtract(const Duration(days: 8)),
-      ),
-      _Item(
-        id: 'enc-100142',
-        protocolo: 'UBS-2026-100142',
-        especialidade: 'Endocrinologia',
-        status: 'AGUARDANDO_REGULACAO',
-        prioridade: 'ELETIVA',
-        criadoEm: agora.subtract(const Duration(days: 2)),
-      ),
-      _Item(
-        id: 'enc-100151',
-        protocolo: 'UBS-2026-100151',
-        especialidade: 'Ortopedia',
-        status: 'PENDENCIA_DOCUMENTO',
-        prioridade: 'ELETIVA',
-        criadoEm: agora.subtract(const Duration(days: 5)),
-      ),
-    ];
-
-    final encerrados = <_Item>[
-      _Item(
-        id: 'enc-099221',
-        protocolo: 'UBS-2026-099221',
-        especialidade: 'Oftalmologia',
-        status: 'CONCLUIDO',
-        prioridade: 'ELETIVA',
-        criadoEm: agora.subtract(const Duration(days: 180)),
-      ),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(encaminhamentosProvider);
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
@@ -60,51 +31,69 @@ class EncaminhamentosListPage extends StatelessWidget {
             icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
         title: const Text('Meus encaminhamentos'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        children: [
-          if (ativos.isNotEmpty) ...[
-            SectionHeader(label: 'Em andamento'),
-            for (final e in ativos) ...[
-              _EncCard(item: e),
-              const SizedBox(height: AppSpacing.md),
-            ],
-            const SizedBox(height: AppSpacing.lg),
-          ],
-          if (encerrados.isNotEmpty) ...[
-            SectionHeader(label: 'Histórico'),
-            for (final e in encerrados) ...[
-              _EncCard(item: e),
-              const SizedBox(height: AppSpacing.md),
-            ],
-          ],
-          const SizedBox(height: AppSpacing.huge),
-        ],
+      body: async.when(
+        loading: () => const LoadingView(),
+        error: (_, __) => EmptyView(
+          icon: Icons.cloud_off,
+          title: 'Não conseguimos carregar',
+          message: 'Verifique sua conexão e tente novamente.',
+          actionLabel: 'Tentar de novo',
+          onAction: () => ref.invalidate(encaminhamentosProvider),
+        ),
+        data: (todos) {
+          if (todos.isEmpty) {
+            return EmptyView(
+              icon: Icons.medical_services_outlined,
+              title: 'Nenhum encaminhamento ainda',
+              message:
+                  'Quando sua UBS abrir um encaminhamento pra você, ele aparece aqui.',
+            );
+          }
+
+          final ativos = todos.where(
+              (e) => !_statusTerminais.contains(e.status.toUpperCase())).toList()
+            ..sort((a, b) => b.atualizadoEm.compareTo(a.atualizadoEm));
+          final encerrados = todos.where(
+              (e) => _statusTerminais.contains(e.status.toUpperCase())).toList()
+            ..sort((a, b) => b.criadoEm.compareTo(a.criadoEm));
+
+          return RefreshIndicator(
+            color: AppColors.blue900,
+            onRefresh: () async {
+              ref.invalidate(encaminhamentosProvider);
+              await Future.delayed(const Duration(milliseconds: 400));
+            },
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              children: [
+                if (ativos.isNotEmpty) ...[
+                  SectionHeader(label: 'Em andamento'),
+                  for (final e in ativos) ...[
+                    _EncCard(item: e),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                  const SizedBox(height: AppSpacing.lg),
+                ],
+                if (encerrados.isNotEmpty) ...[
+                  SectionHeader(label: 'Histórico'),
+                  for (final e in encerrados) ...[
+                    _EncCard(item: e),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                ],
+                const SizedBox(height: AppSpacing.huge),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
 
-class _Item {
-  const _Item({
-    required this.id,
-    required this.protocolo,
-    required this.especialidade,
-    required this.status,
-    required this.prioridade,
-    required this.criadoEm,
-  });
-  final String id;
-  final String protocolo;
-  final String especialidade;
-  final String status;
-  final String prioridade;
-  final DateTime criadoEm;
-}
-
 class _EncCard extends StatelessWidget {
   const _EncCard({required this.item});
-  final _Item item;
+  final Encaminhamento item;
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +160,12 @@ class _EncCard extends StatelessWidget {
                       .contains(item.prioridade.toUpperCase()))
                     StatusBadge.fromPrioridade(item.prioridade,
                         size: StatusBadgeSize.medium),
+                  if (item.pendenciasAbertas > 0)
+                    StatusBadge(
+                      label: 'Pendência aberta',
+                      tone: StatusTone.warning,
+                      size: StatusBadgeSize.medium,
+                    ),
                 ],
               ),
               const SizedBox(height: AppSpacing.md),
@@ -206,7 +201,7 @@ class _EncCard extends StatelessWidget {
   }
 }
 
-/// Mini visualização do roadmap (4 bolinhas) — hard-coded mapping.
+/// Mini visualização do roadmap (4 bolinhas) — calculado a partir do `status` real.
 class _MiniRoadmap extends StatelessWidget {
   const _MiniRoadmap({required this.statusKey});
   final String statusKey;
@@ -235,8 +230,8 @@ class _MiniRoadmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRejeitado = statusKey == 'REJEITADO';
-    final isCancelado = statusKey == 'CANCELADO';
+    final isRejeitado = statusKey.toUpperCase() == 'REJEITADO';
+    final isCancelado = statusKey.toUpperCase() == 'CANCELADO';
     final active = _activeStep;
 
     if (isRejeitado || isCancelado) {

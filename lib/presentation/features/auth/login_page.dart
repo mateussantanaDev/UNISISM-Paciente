@@ -124,15 +124,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       icon: Icons.login,
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    Center(
-                      child: Text(
-                        'Mock: use senha "senha123"',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.slate500,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: AppSpacing.xl),
                   ],
                 ),

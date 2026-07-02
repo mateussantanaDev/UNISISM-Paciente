@@ -1,6 +1,5 @@
 import '../api/api_client.dart';
 import '../models/ubs.dart';
-import 'mock/mock_seed.dart';
 
 /// UBS. Contrato:
 ///
@@ -15,15 +14,8 @@ class UbsRepositoryHttp implements UbsRepository {
 
   @override
   Future<Ubs> minha() async {
-    final r = await api.get<Map<String, dynamic>>('/paciente/ubs/minha');
+    final r = await api.get<Map<String, dynamic>>('/paciente-app/ubs/minha');
     return Ubs.fromJson(r);
   }
 }
 
-class UbsRepositoryMock implements UbsRepository {
-  @override
-  Future<Ubs> minha() async {
-    await Future.delayed(const Duration(milliseconds: 250));
-    return MockSeed.ubs;
-  }
-}

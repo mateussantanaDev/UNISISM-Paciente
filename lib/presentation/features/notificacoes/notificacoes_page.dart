@@ -37,9 +37,13 @@ class NotificacoesPage extends ConsumerWidget {
       },
       body: async.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(notificacoesListProvider),
+        // Erros viram empty pra não tirar o paciente do app. Pull-to-refresh
+        // tenta de novo silenciosamente.
+        error: (_, __) => const EmptyView(
+          icon: Icons.notifications_off_outlined,
+          title: 'Nenhum aviso por aqui',
+          message:
+              'Quando a Secretaria de Saúde mandar algo pra você, vai aparecer aqui.',
         ),
         data: (list) {
           if (list.isEmpty) {

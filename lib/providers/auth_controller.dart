@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/errors/api_exception.dart';
 import '../data/models/paciente.dart';
 import 'providers.dart';
 
@@ -19,6 +20,12 @@ class AuthState {
       status == AuthStatus.authenticated && paciente != null;
   bool get isLoading =>
       status == AuthStatus.checking || status == AuthStatus.signingIn;
+
+  /// True quando o paciente está logado mas ainda com a senha provisória
+  /// (= CPF dígitos). O router força fluxo bloqueante em
+  /// `/perfil/trocar-senha` enquanto isso for `true`.
+  bool get requiresPasswordChange =>
+      isAuthenticated && (paciente?.senhaProvisoria ?? false);
 
   AuthState copyWith({
     AuthStatus? status,
@@ -84,10 +91,38 @@ class AuthController extends Notifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
+  /// Troca a senha do paciente autenticado. Após sucesso, refaz `me()` pra
+  /// que o estado reflita `senhaProvisoria=false` — o router então libera
+  /// navegação fora de `/perfil/trocar-senha`.
+  ///
+  /// Lança em caso de erro pra UI tratar inline (não muda o estado).
+  Future<void> trocarSenha({
+    required String senhaAtual,
+    required String novaSenha,
+  }) async {
+    final repo = ref.read(authRepositoryProvider);
+    await repo.trocarSenha(senhaAtual: senhaAtual, novaSenha: novaSenha);
+    // Confirma que o backend zerou `senhaProvisoria`.
+    try {
+      final me = await repo.me();
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        paciente: me,
+      );
+    } catch (_) {
+      // Sem rede pra refetch — zera local mesmo assim.
+      final atual = state.paciente;
+      if (atual != null) {
+        state = state.copyWith(
+          status: AuthStatus.authenticated,
+          paciente: atual.copyWith(senhaProvisoria: false),
+        );
+      }
+    }
+  }
+
   String _humanize(Object e) {
-    final msg = e.toString();
-    if (msg.contains('senha123')) return 'CPF ou senha inválidos.';
-    if (msg.contains('NETWORK')) return 'Sem conexão. Verifique sua internet.';
+    if (e is ApiException) return e.mensagemAmigavel;
     return 'Não conseguimos entrar. Tente de novo.';
   }
 }

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../data/models/ubs.dart';
 import '../../../providers/providers.dart';
 import '../../shared/widgets/widgets.dart';
 
@@ -38,9 +39,11 @@ class MinhaUbsPage extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(minhaUbsProvider),
+        error: (_, __) => const EmptyView(
+          icon: Icons.local_hospital_outlined,
+          title: 'UBS ainda sem informações',
+          message:
+              'Quando a Secretaria preencher os dados da sua UBS, eles aparecem aqui.',
         ),
         data: (u) => ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -129,12 +132,13 @@ class MinhaUbsPage extends ConsumerWidget {
               mainAxisSpacing: AppSpacing.sm,
               childAspectRatio: 0.92,
               children: [
-                _BigActionTile(
-                  icon: Icons.call,
-                  label: 'Ligar',
-                  bg: AppColors.emerald700,
-                  onTap: () => _ligar(u.telefone),
-                ),
+                if (u.telefone != null && u.telefone!.isNotEmpty)
+                  _BigActionTile(
+                    icon: Icons.call,
+                    label: 'Ligar',
+                    bg: AppColors.emerald700,
+                    onTap: () => _ligar(u.telefone!),
+                  ),
                 if (u.whatsapp != null)
                   _BigActionTile(
                     icon: Icons.chat_bubble_outline,
@@ -165,9 +169,12 @@ class MinhaUbsPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _line(Icons.location_on_outlined, u.endereco),
-                  _line(Icons.map_outlined, '${u.bairro} · ${u.cidade}/${u.uf}'),
-                  _line(Icons.markunread_mailbox_outlined, u.cep, mono: true),
+                  _line(Icons.location_on_outlined,
+                      u.endereco ?? 'Endereço não cadastrado'),
+                  _line(Icons.map_outlined,
+                      '${u.bairro ?? ''}${u.bairro != null ? ' · ' : ''}${u.cidade}/${u.uf}'),
+                  if (u.cep != null && u.cep!.isNotEmpty)
+                    _line(Icons.markunread_mailbox_outlined, u.cep!, mono: true),
                 ],
               ),
             ),
@@ -176,15 +183,19 @@ class MinhaUbsPage extends ConsumerWidget {
             SectionHeader(label: 'Horário de atendimento'),
             PanelCard(
               padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Row(
-                children: [
-                  const Icon(Icons.access_time, color: AppColors.blue900, size: 24),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Text(u.horarioFuncionamento, style: AppTypography.bodyLarge),
-                  ),
-                ],
-              ),
+              child: u.temHorariosEstruturados
+                  ? _HorariosTabela(horarios: u.horarios!)
+                  : Row(
+                      children: [
+                        const Icon(Icons.access_time,
+                            color: AppColors.blue900, size: 24),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(u.horarioFuncionamento,
+                              style: AppTypography.bodyLarge),
+                        ),
+                      ],
+                    ),
             ),
 
             if (u.observacoes != null) ...[
@@ -306,6 +317,60 @@ class _BigActionTile extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Renderiza tabela compacta dos horários estruturados.
+/// Backend pode mandar 7 dias ou menos — quem não vier é "Fechado".
+class _HorariosTabela extends StatelessWidget {
+  const _HorariosTabela({required this.horarios});
+  final Map<String, HorarioDia?> horarios;
+
+  static const _dias = [
+    ('segunda', 'Segunda'),
+    ('terca', 'Terça'),
+    ('quarta', 'Quarta'),
+    ('quinta', 'Quinta'),
+    ('sexta', 'Sexta'),
+    ('sabado', 'Sábado'),
+    ('domingo', 'Domingo'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _dias.map((d) {
+        final h = horarios[d.$1];
+        final aberto = h != null;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 90,
+                child: Text(
+                  d.$2,
+                  style: AppTypography.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: aberto ? AppColors.slate900 : AppColors.slate500,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  aberto ? h.formatado : 'Fechado',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: aberto ? AppColors.slate700 : AppColors.slate500,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }

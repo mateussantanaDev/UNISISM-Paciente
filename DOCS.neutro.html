@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNISISM Paciente — Documentação completa</title>
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<style>
+  :root {
+    --blue-900: #1E3A8A;
+    --blue-950: #172554;
+    --blue-700: #1D4ED8;
+    --blue-50:  #EFF6FF;
+    --slate-50: #F8FAFC;
+    --slate-100:#F1F5F9;
+    --slate-200:#E2E8F0;
+    --slate-300:#CBD5E1;
+    --slate-400:#94A3B8;
+    --slate-500:#64748B;
+    --slate-600:#475569;
+    --slate-700:#334155;
+    --slate-900:#0F172A;
+    --emerald-50:#ECFDF5;
+    --emerald-700:#047857;
+    --emerald-900:#064E3B;
+    --amber-50: #FFFBEB;
+    --amber-600:#D97706;
+    --amber-900:#78350F;
+    --red-50:   #FEF2F2;
+    --red-700:  #B91C1C;
+    --red-900:  #7F1D1D;
+    --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv02','cv03','cv04','cv11';
+    -webkit-font-smoothing: antialiased;
+    background: var(--slate-50);
+    color: var(--slate-900);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  /* Reset brutalista — sem cantos arredondados */
+  button, input, textarea, select { border-radius: 0; font-family: inherit; }
+
+  ::selection { background: var(--blue-900); color: white; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Layout com sidebar fixa */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: white;
+    border-right: 1px solid var(--slate-200);
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 20px;
+    border-bottom: 1px solid var(--slate-200);
+  }
+  .sidebar-brand .badge {
+    width: 36px; height: 36px;
+    background: var(--blue-900);
+    color: white;
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sidebar-brand .text { line-height: 1.1; }
+  .sidebar-brand .text strong {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--blue-900);
+  }
+  .sidebar-brand .text small {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--slate-500);
+    display: block;
+  }
+  .sidebar nav { padding: 16px 0; }
+  .sidebar nav a {
+    display: block;
+    padding: 8px 20px;
+    color: var(--slate-700);
+    text-decoration: none;
+    font-size: 14px;
+    border-left: 2px solid transparent;
+  }
+  .sidebar nav a:hover { background: var(--slate-100); color: var(--slate-900); }
+  .sidebar nav a.section {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    padding-top: 16px;
+    pointer-events: none;
+  }
+
+  /* Conteúdo */
+  main { padding: 32px 0 96px; }
+
+  /* Header */
+  .page-header {
+    border-bottom: 1px solid var(--slate-200);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+  .page-header .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .page-header h1 {
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 0 0 12px;
+    letter-spacing: -0.5px;
+  }
+  .page-header .lead {
+    font-size: 17px;
+    color: var(--slate-700);
+    max-width: 720px;
+  }
+  .page-header .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  /* Pills / Badges */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: white;
+    border: 1px solid var(--slate-300);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--slate-700);
+  }
+  .pill.blue { background: var(--blue-50); border-color: var(--blue-700); color: var(--blue-900); }
+  .pill.green { background: var(--emerald-50); border-color: var(--emerald-700); color: var(--emerald-900); }
+  .pill.amber { background: var(--amber-50); border-color: var(--amber-600); color: var(--amber-900); }
+  .pill.red { background: var(--red-50); border-color: var(--red-700); color: var(--red-900); }
+
+  /* Section */
+  section { margin: 56px 0; scroll-margin-top: 24px; }
+  section > h2 {
+    font-size: 24px;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--slate-900);
+    display: inline-block;
+  }
+  section > .desc {
+    color: var(--slate-600);
+    margin: 0 0 24px;
+    max-width: 720px;
+  }
+  h3 {
+    font-size: 18px;
+    margin: 32px 0 12px;
+  }
+  h4 {
+    font-size: 15px;
+    margin: 20px 0 8px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--slate-600);
+    font-weight: 700;
+  }
+
+  /* Panel — substitui card brutalista */
+  .panel {
+    background: white;
+    border: 1px solid var(--slate-200);
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .panel-header {
+    background: linear-gradient(to bottom, white, var(--slate-50));
+    border-bottom: 1px solid var(--slate-200);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .panel-header .num {
+    width: 28px; height: 28px;
+    background: var(--blue-900);
+    color: white;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel-header h3 { margin: 0; font-size: 14px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 2px; }
+  .panel-body { padding: 16px 20px; }
+  .panel-full { background: white; border: 1px solid var(--slate-200); margin: 16px 0; }
+
+  /* Accents (border-left 4px) */
+  .info-block {
+    border-left: 4px solid var(--blue-900);
+    background: var(--blue-50);
+    padding: 12px 16px;
+    margin: 12px 0;
+  }
+  .info-block.warn { border-color: var(--amber-600); background: var(--amber-50); color: var(--amber-900); }
+  .info-block.crit { border-color: var(--red-700); background: var(--red-50); color: var(--red-900); }
+  .info-block.ok   { border-color: var(--emerald-700); background: var(--emerald-50); color: var(--emerald-900); }
+  .info-block .t {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 16px 0;
+    background: white;
+  }
+  thead {
+    background: var(--slate-50);
+    border-bottom: 1px solid var(--slate-200);
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--slate-600);
+    border-right: 1px solid var(--slate-200);
+    border-top: 1px solid var(--slate-200);
+  }
+  th:last-child { border-right: none; }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--slate-100);
+    border-right: 1px solid var(--slate-100);
+    vertical-align: top;
+  }
+  td:last-child { border-right: none; }
+  tbody tr:hover { background: var(--slate-50); }
+  td .mono { font-family: var(--mono); font-size: 13px; color: var(--blue-900); font-weight: 700; }
+  td code { background: var(--slate-100); padding: 1px 4px; font-size: 12px; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 720px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+
+  /* Metric card */
+  .metric {
+    background: white;
+    border: 1px solid var(--slate-200);
+    padding: 16px;
+  }
+  .metric .num {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--slate-900);
+    letter-spacing: -1px;
+  }
+  .metric .lab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .metric.accent-blue { border-left: 4px solid var(--blue-900); }
+  .metric.accent-green { border-left: 4px solid var(--emerald-700); }
+  .metric.accent-amber { border-left: 4px solid var(--amber-600); }
+  .metric.accent-red { border-left: 4px solid var(--red-700); }
+
+  /* Code blocks */
+  pre {
+    background: var(--slate-900);
+    color: #E2E8F0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    border: 1px solid var(--slate-900);
+    margin: 12px 0;
+  }
+  pre .k { color: #F472B6; }       /* keyword */
+  pre .s { color: #34D399; }       /* string */
+  pre .c { color: #94A3B8; font-style: italic; } /* comment */
+  pre .t { color: #FBBF24; }       /* type/class */
+  pre .v { color: #93C5FD; }       /* var */
+  code:not(pre code) {
+    background: var(--slate-100);
+    padding: 1px 5px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--slate-900);
+  }
+
+  /* File path inline */
+  .path {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--blue-900);
+    background: var(--blue-50);
+    padding: 1px 5px;
+    border-bottom: 1px dotted var(--blue-700);
+  }
+
+  /* Tree (estrutura de pastas) */
+  .tree {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--slate-900);
+    color: #E2E8F0;
+    padding: 20px;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .tree .dir { color: #93C5FD; font-weight: 700; }
+  .tree .file { color: #E2E8F0; }
+  .tree .comment { color: #94A3B8; font-style: italic; }
+
+  /* Screen mockup boxes */
+  .screen-card {
+    background: white;
+    border: 1px solid var(--slate-200);
+    padding: 20px;
+    margin: 12px 0;
+  }
+  .screen-card .route {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--blue-900);
+    background: var(--blue-50);
+    padding: 4px 8px;
+    border-left: 3px solid var(--blue-900);
+    margin-bottom: 12px;
+    display: inline-block;
+  }
+  .screen-card h4.title {
+    font-family: 'Inter', sans-serif;
+    text-transform: none;
+    letter-spacing: -0.2px;
+    color: var(--slate-900);
+    font-size: 17px;
+    margin: 8px 0 4px;
+  }
+  .screen-card .file-ref {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--slate-500);
+    margin-bottom: 12px;
+  }
+  .screen-card ul { margin: 8px 0 0 18px; padding: 0; }
+  .screen-card ul li { margin-bottom: 4px; }
+
+  /* Flow boxes */
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 16px 0;
+  }
+  .flow .step {
+    background: white;
+    border: 1px solid var(--slate-200);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .flow .step .n {
+    width: 32px; height: 32px;
+    background: var(--blue-900);
+    color: white;
+    font-family: var(--mono);
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .flow .step .arrow {
+    color: var(--slate-400);
+    text-align: center;
+    font-family: var(--mono);
+  }
+
+  /* Status pills (visuals) */
+  .status-strip {
+    display: flex; gap: 4px; margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .status-strip .s {
+    padding: 4px 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    font-weight: 700;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .s.s-warn  { background: var(--amber-50);   border-color: var(--amber-600); color: var(--amber-900); }
+  .s.s-info  { background: var(--blue-50);    border-color: var(--blue-700); color: var(--blue-900); }
+  .s.s-ok    { background: var(--emerald-50); border-color: var(--emerald-700); color: var(--emerald-900); }
+  .s.s-crit  { background: var(--red-50);     border-color: var(--red-700); color: var(--red-900); }
+  .s.s-neut  { background: var(--slate-50);   border-color: var(--slate-600); color: var(--slate-700); }
+
+  /* Roadmap visual */
+  .roadmap {
+    background: white;
+    border: 1px solid var(--slate-200);
+    padding: 20px;
+    margin: 12px 0;
+  }
+  .roadmap .node {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 12px;
+    align-items: start;
+    position: relative;
+  }
+  .roadmap .node:not(:last-child) { padding-bottom: 24px; }
+  .roadmap .node:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 21px;
+    top: 44px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--slate-200);
+  }
+  .roadmap .node.done:not(:last-child)::before { background: var(--emerald-700); }
+  .roadmap .dot {
+    width: 44px; height: 44px;
+    background: var(--slate-50);
+    border: 2px solid var(--slate-300);
+    color: var(--slate-400);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .roadmap .done .dot { background: var(--emerald-50); border-color: var(--emerald-700); color: var(--emerald-700); }
+  .roadmap .curr .dot { background: var(--blue-50); border-color: var(--blue-900); color: var(--blue-900); }
+  .roadmap .content .t {
+    font-weight: 700;
+    color: var(--slate-900);
+    font-size: 15px;
+  }
+  .roadmap .pend .content .t { color: var(--slate-500); }
+  .roadmap .content .d {
+    font-size: 13px;
+    color: var(--slate-700);
+    margin-top: 2px;
+  }
+  .roadmap .pend .content .d { color: var(--slate-400); }
+  .roadmap .now-pill {
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    background: var(--blue-50);
+    border: 1px solid var(--blue-900);
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--blue-900);
+  }
+
+  /* TOC sticky */
+  details { margin: 8px 0; }
+  details summary {
+    cursor: pointer;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--slate-200);
+    font-weight: 600;
+    list-style: none;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before {
+    content: "▸";
+    color: var(--blue-900);
+    margin-right: 8px;
+    display: inline-block;
+    transition: transform 200ms;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details > div { padding: 12px 16px; border: 1px solid var(--slate-200); border-top: none; background: white; }
+
+  /* Cor swatch */
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--slate-100);
+  }
+  .swatch {
+    width: 36px; height: 36px;
+    border: 1px solid var(--slate-200);
+    flex-shrink: 0;
+  }
+  .swatch-meta {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    flex: 1;
+  }
+  .swatch-meta .name {
+    font-weight: 600;
+    font-size: 13px;
+    width: 130px;
+  }
+  .swatch-meta .hex {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--slate-600);
+    width: 80px;
+  }
+  .swatch-meta .use {
+    font-size: 13px;
+    color: var(--slate-700);
+    flex: 1;
+  }
+
+  /* Misc */
+  hr { border: none; border-top: 1px solid var(--slate-200); margin: 32px 0; }
+  a { color: var(--blue-900); }
+  a:hover { color: var(--blue-950); }
+  strong { color: var(--slate-900); font-weight: 700; }
+
+  /* Print friendly */
+  @media print {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ====================== SIDEBAR ====================== -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="badge">U</div>
+      <div class="text">
+        <strong>UNISISM</strong>
+        <small>PACIENTE · DOCS</small>
+      </div>
+    </div>
+    <nav>
+      <a class="section">Overview</a>
+      <a href="#tldr">TL;DR</a>
+      <a href="#stack">Stack</a>
+      <a href="#estrutura">Estrutura</a>
+
+      <a class="section">Design System</a>
+      <a href="#filosofia">Filosofia</a>
+      <a href="#cores">Cores</a>
+      <a href="#tipografia">Tipografia</a>
+      <a href="#espacamento">Espaçamento</a>
+      <a href="#componentes">Componentes</a>
+
+      <a class="section">Telas</a>
+      <a href="#auth">Auth</a>
+      <a href="#onboarding">Onboarding</a>
+      <a href="#shell">Shell + Bottom Nav</a>
+      <a href="#home">Home</a>
+      <a href="#encaminhamentos">Encaminhamentos</a>
+      <a href="#dossie">Dossiê</a>
+      <a href="#tfd">TFD</a>
+      <a href="#banners-screens">Banners</a>
+      <a href="#notificacoes">Notificações</a>
+      <a href="#ubs">UBS</a>
+      <a href="#perfil">Perfil</a>
+
+      <a class="section">Sistemas</a>
+      <a href="#roadmap">Status Roadmap</a>
+      <a href="#dados">Modelos de Dados</a>
+      <a href="#repositories">Repositories</a>
+      <a href="#providers">Providers (Riverpod)</a>
+      <a href="#router">Router</a>
+      <a href="#push">Push Notifications</a>
+
+      <a class="section">Backend</a>
+      <a href="#api-conv">Convenções</a>
+      <a href="#api-endpoints">Endpoints</a>
+      <a href="#api-enums">Enums</a>
+
+      <a class="section">Operação</a>
+      <a href="#rodar">Como rodar</a>
+      <a href="#bugs">Erros conhecidos</a>
+      <a href="#proximos">Próximos passos</a>
+    </nav>
+  </aside>
+
+  <!-- ====================== MAIN ====================== -->
+  <main>
+    <div class="container">
+
+      <!-- Header -->
+      <header class="page-header">
+        <div class="eyebrow">DOCUMENTAÇÃO COMPLETA · ATUALIZADO 2026.05</div>
+        <h1>UNISISM Paciente</h1>
+        <p class="lead">
+          App Flutter do cidadão dentro do ecossistema UNISISM. Acompanhamento de encaminhamentos médicos, dossiê de saúde, solicitação de vaga em TFD, notificações da Secretaria e contato direto com a UBS. Esta documentação cobre <strong>tudo</strong> que está implementado: telas, componentes, modelos, fluxos, roteamento e contrato esperado de backend.
+        </p>
+        <div class="meta">
+          <span class="pill blue">Flutter 3.41.7</span>
+          <span class="pill">Dart 3.11+</span>
+          <span class="pill">Material 3</span>
+          <span class="pill">Riverpod 2.6</span>
+          <span class="pill">go_router 14.6</span>
+          <span class="pill green">76 arquivos Dart</span>
+          <span class="pill green">~12.500 linhas</span>
+          <span class="pill amber">Mock-mode</span>
+        </div>
+      </header>
+
+      <!-- ====================== TL;DR ====================== -->
+      <section id="tldr">
+        <h2>TL;DR</h2>
+        <p class="desc">O que esse app é, em uma frase: terceira "face" do UNISISM (depois de UBS e SMS/Regulação) — é onde o <strong>paciente</strong> vê sua jornada na rede pública de saúde do município.</p>
+
+        <div class="grid-4">
+          <div class="metric accent-blue">
+            <div class="num">7</div>
+            <div class="lab">Features MVP</div>
+          </div>
+          <div class="metric accent-green">
+            <div class="num">24</div>
+            <div class="lab">Telas</div>
+          </div>
+          <div class="metric accent-amber">
+            <div class="num">17</div>
+            <div class="lab">Componentes DS</div>
+          </div>
+          <div class="metric accent-red">
+            <div class="num">8</div>
+            <div class="lab">Modelos de domínio</div>
+          </div>
+        </div>
+
+        <h3>As 7 features</h3>
+        <table>
+          <thead><tr><th>#</th><th>Feature</th><th>Onde</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Acompanhar status do encaminhamento</td><td>Home + detalhe + roadmap</td><td><span class="pill green">Pronto</span></td></tr>
+            <tr><td>2</td><td>Dossiê médico (atendimentos, vacinas, exames)</td><td>Aba "Saúde"</td><td><span class="pill green">Pronto</span></td></tr>
+            <tr><td>3</td><td>TFD blablacar (vagas em viagens)</td><td>Acesso pela Home</td><td><span class="pill green">Pronto</span></td></tr>
+            <tr><td>4</td><td>Banners da Secretaria</td><td>Carrossel na Home + detalhe</td><td><span class="pill green">Pronto</span></td></tr>
+            <tr><td>5</td><td>Detalhe + anexos + share/download</td><td>Sub-rotas do encaminhamento</td><td><span class="pill green">Pronto</span></td></tr>
+            <tr><td>6</td><td>Push notifications + inbox</td><td>Aba "Avisos"</td><td><span class="pill amber">UI pronta · FCM precisa Firebase</span></td></tr>
+            <tr><td>7</td><td>UI simplificada para baixa letramento</td><td>Aplicado em todas as telas</td><td><span class="pill green">Pronto</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ====================== STACK ====================== -->
+      <section id="stack">
+        <h2>Stack técnica</h2>
+        <p class="desc">Tudo escolhido em 27/05/2026 — versões estáveis 2026, libs com manutenção ativa.</p>
+
+        <table>
+          <thead><tr><th>Camada</th><th>Lib</th><th>Versão</th><th>Por quê</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td>Flutter</td><td>3.41.7</td><td>Stable channel; Dart 3.11+</td></tr>
+            <tr><td>State</td><td>flutter_riverpod</td><td>^2.6.1</td><td>Provider system testável, menos boilerplate que BLoC</td></tr>
+            <tr><td>Routing</td><td>go_router</td><td>^14.6.2</td><td>Deep-links pra push notifications</td></tr>
+            <tr><td>HTTP</td><td>dio</td><td>^5.7.0</td><td>Interceptors, retry, download progress</td></tr>
+            <tr><td>Auth storage</td><td>flutter_secure_storage</td><td>^9.2.2</td><td>JWT em Keychain/Keystore</td></tr>
+            <tr><td>Push</td><td>firebase_messaging + flutter_local_notifications</td><td>^15.1.5 / ^18.0.1</td><td>FCM v1 + apresentação local</td></tr>
+            <tr><td>Forms</td><td>mask_text_input_formatter</td><td>^2.9.0</td><td>Máscara de CPF</td></tr>
+            <tr><td>Files</td><td>open_filex + share_plus + path_provider</td><td>—</td><td>Download + visualização + share de PDFs/imgs</td></tr>
+            <tr><td>UI assets</td><td>cached_network_image + flutter_svg</td><td>—</td><td>Imagens de banners</td></tr>
+            <tr><td>i18n</td><td>intl + timeago</td><td>^0.20.1 / ^3.7.0</td><td>Format pt_BR de datas e "há X dias"</td></tr>
+            <tr><td>Fontes</td><td>Inter + JetBrains Mono</td><td>bundladas</td><td>Sem Google Fonts (LGPD)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ====================== ESTRUTURA ====================== -->
+      <section id="estrutura">
+        <h2>Estrutura de pastas</h2>
+        <p class="desc">Clean-ish architecture: <strong>core</strong> (infra) → <strong>data</strong> (modelos + repos) → <strong>providers</strong> (estado) → <strong>presentation</strong> (UI).</p>
+
+<div class="tree"><span class="dir">lib/</span>
+├── <span class="file">main.dart</span>                                  <span class="comment"># entrypoint, wire de auth+push+router</span>
+├── <span class="dir">core/</span>
+│   ├── <span class="dir">constants/</span><span class="file">app_constants.dart</span>           <span class="comment"># URLs, flags, chaves de storage</span>
+│   ├── <span class="dir">errors/</span><span class="file">api_exception.dart</span>              <span class="comment"># tipo de erro tipado</span>
+│   ├── <span class="dir">router/</span><span class="file">app_router.dart</span>                 <span class="comment"># go_router + auth guard + transições</span>
+│   ├── <span class="dir">services/</span><span class="file">push_service.dart</span>             <span class="comment"># FCM + flutter_local_notifications</span>
+│   └── <span class="dir">theme/</span>
+│       ├── <span class="file">app_colors.dart</span>                    <span class="comment"># tokens de cor (slate, blue-900, semânticas)</span>
+│       ├── <span class="file">app_typography.dart</span>                <span class="comment"># Inter + JetBrains Mono</span>
+│       ├── <span class="file">app_spacing.dart</span>                   <span class="comment"># múltiplos de 4dp, bordas</span>
+│       └── <span class="file">app_theme.dart</span>                     <span class="comment"># ThemeData Material 3 com tokens</span>
+├── <span class="dir">data/</span>
+│   ├── <span class="dir">api/</span><span class="file">api_client.dart</span>                    <span class="comment"># Dio + interceptors + tokens</span>
+│   ├── <span class="dir">models/</span>                                  <span class="comment"># entidades puras</span>
+│   │   ├── <span class="file">paciente.dart</span>
+│   │   ├── <span class="file">sessao.dart</span>
+│   │   ├── <span class="file">encaminhamento.dart</span>                <span class="comment"># inclui Anexo + EventoTimeline</span>
+│   │   ├── <span class="file">dossie.dart</span>                        <span class="comment"># DossieResumo + Atendimento + Vacinacao + Exame</span>
+│   │   ├── <span class="file">tfd.dart</span>                           <span class="comment"># TfdViagem + TfdSolicitacao</span>
+│   │   ├── <span class="file">banner.dart</span>
+│   │   ├── <span class="file">notificacao.dart</span>
+│   │   └── <span class="file">ubs.dart</span>
+│   └── <span class="dir">repositories/</span>                            <span class="comment"># contrato + Http + Mock</span>
+│       ├── <span class="file">auth_repository.dart</span>
+│       ├── <span class="file">encaminhamento_repository.dart</span>
+│       ├── <span class="file">dossie_repository.dart</span>
+│       ├── <span class="file">tfd_repository.dart</span>
+│       ├── <span class="file">banner_repository.dart</span>
+│       ├── <span class="file">notificacao_repository.dart</span>
+│       ├── <span class="file">ubs_repository.dart</span>
+│       └── <span class="dir">mock/</span><span class="file">mock_seed.dart</span>                <span class="comment"># dados demo realistas</span>
+├── <span class="dir">providers/</span>                                   <span class="comment"># Riverpod providers</span>
+│   ├── <span class="file">providers.dart</span>                          <span class="comment"># registro central de repos</span>
+│   ├── <span class="file">auth_controller.dart</span>
+│   ├── <span class="file">encaminhamento_controller.dart</span>
+│   ├── <span class="file">dossie_controller.dart</span>
+│   ├── <span class="file">tfd_controller.dart</span>
+│   ├── <span class="file">banner_controller.dart</span>
+│   └── <span class="file">notificacao_controller.dart</span>
+└── <span class="dir">presentation/</span>
+    ├── <span class="dir">shared/widgets/</span>                          <span class="comment"># design system (17 widgets)</span>
+    │   ├── <span class="file">widgets.dart</span>                        <span class="comment"># barrel export</span>
+    │   ├── <span class="file">app_scaffold.dart</span>
+    │   ├── <span class="file">panel_card.dart</span>
+    │   ├── <span class="file">primary_button.dart</span>
+    │   ├── <span class="file">status_badge.dart</span>
+    │   ├── <span class="file">status_hero_card.dart</span>
+    │   ├── <span class="file">status_roadmap.dart</span>                 <span class="comment"># roadmap estilo Shopee</span>
+    │   ├── <span class="file">icon_card.dart</span>
+    │   ├── <span class="file">sms_banner.dart</span>
+    │   ├── <span class="file">info_block.dart</span>
+    │   ├── <span class="file">section_header.dart</span>
+    │   ├── <span class="file">form_field_x.dart</span>
+    │   ├── <span class="file">document_tile.dart</span>
+    │   ├── <span class="file">protocolo_pill.dart</span>
+    │   ├── <span class="file">timeline_step.dart</span>
+    │   ├── <span class="file">state_views.dart</span>                    <span class="comment"># LoadingView, EmptyView, ErrorView</span>
+    │   ├── <span class="file">fade_in.dart</span>                        <span class="comment"># entrada animada</span>
+    │   └── <span class="file">skeleton.dart</span>
+    └── <span class="dir">features/</span>
+        ├── <span class="file">main_shell.dart</span>                     <span class="comment"># bottom nav 4 abas</span>
+        ├── <span class="dir">auth/</span>                                <span class="comment"># splash + login + esqueci-senha</span>
+        ├── <span class="dir">onboarding/</span>                          <span class="comment"># 3 slides</span>
+        ├── <span class="dir">home/</span>                                <span class="comment"># central de comando</span>
+        ├── <span class="dir">encaminhamento/</span>                      <span class="comment"># lista + detalhe + timeline + anexos</span>
+        ├── <span class="dir">dossie/</span>                              <span class="comment"># resumo + atendimentos + vacinas + exames</span>
+        ├── <span class="dir">tfd/</span>                                 <span class="comment"># lista + solicitar + detalhe da solicitação</span>
+        ├── <span class="dir">banners/</span>                             <span class="comment"># detalhe do banner</span>
+        ├── <span class="dir">notificacoes/</span>                        <span class="comment"># inbox</span>
+        ├── <span class="dir">ubs/</span>                                 <span class="comment"># minha UBS + falar com UBS</span>
+        └── <span class="dir">perfil/</span>                              <span class="comment"># perfil + trocar senha + prefs + ajuda</span>
+</div>
+      </section>
+
+      <!-- ====================== FILOSOFIA ====================== -->
+      <section id="filosofia">
+        <h2>Filosofia visual: "Brutalismo simpático"</h2>
+        <p class="desc">O DS UBS/SMS é puro <strong>brutalismo B2G</strong> — Bloomberg/Palantir-style — feito pra operador treinado. O app paciente <strong>herda os tokens</strong> (azul-900, slate, cantos retos, sem sombra) mas <strong>inverte a camada de interação</strong> — tamanhos grandes, fonte sans, ícones grandes, sem uppercase decorativo.</p>
+
+        <table>
+          <thead><tr><th>DS UBS (operador)</th><th>App Paciente (cidadão)</th></tr></thead>
+          <tbody>
+            <tr><td><code>text-xs</code> / <code>text-[10px]</code></td><td><code>text-base</code> mínimo (17px), títulos 24-32px</td></tr>
+            <tr><td><code>font-mono</code> em quase tudo</td><td><code>font-sans</code> em tudo; mono só em CPF, protocolo, datas</td></tr>
+            <tr><td>Densidade Bloomberg, 8+ painéis por tela</td><td>Cards grandes, 1 ação por tela</td></tr>
+            <tr><td>Labels UPPERCASE TRACKING-WIDEST + <code>&lt;kbd&gt;</code></td><td>Ícones grandes + label em frase natural</td></tr>
+            <tr><td>Botão 32-40dp altura</td><td>Botão 60dp altura</td></tr>
+            <tr><td>Atalhos por teclado</td><td>Touch targets ≥56dp</td></tr>
+          </tbody>
+        </table>
+
+        <h3>O que <strong>permanece</strong> idêntico</h3>
+        <ul>
+          <li>Paleta de cores (slate, blue-900, semânticas)</li>
+          <li>Cantos retos em tudo (zero <code>border-radius</code>)</li>
+          <li>Bordas finas <code>1px slate-200</code></li>
+          <li>Sem sombras difusas (zero <code>box-shadow</code> a não ser sombra brutalista offset)</li>
+          <li>Gradiente sutil <code>from-white to-slate-50</code> apenas em headers de painel</li>
+          <li>Verde/âmbar/vermelho apenas para <strong>estado</strong> (nunca decoração)</li>
+        </ul>
+      </section>
+
+      <!-- ====================== CORES ====================== -->
+      <section id="cores">
+        <h2>Paleta de cores</h2>
+        <p class="desc">100% derivada do Tailwind v4 stock — apenas <code>slate-*</code>, <code>blue-900/950</code> e tons semânticos.</p>
+
+        <h3>Neutros</h3>
+        <div>
+          <div class="swatch-row"><div class="swatch" style="background:#F8FAFC"></div><div class="swatch-meta"><span class="name">slate-50</span><span class="hex">#F8FAFC</span><span class="use">Fundo da página</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#F1F5F9"></div><div class="swatch-meta"><span class="name">slate-100</span><span class="hex">#F1F5F9</span><span class="use">Hover, divisores</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#E2E8F0"></div><div class="swatch-meta"><span class="name">slate-200</span><span class="hex">#E2E8F0</span><span class="use">Borda padrão de container</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#CBD5E1"></div><div class="swatch-meta"><span class="name">slate-300</span><span class="hex">#CBD5E1</span><span class="use">Borda de input / botão secundário</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#64748B"></div><div class="swatch-meta"><span class="name">slate-500</span><span class="hex">#64748B</span><span class="use">Labels uppercase</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#334155"></div><div class="swatch-meta"><span class="name">slate-700</span><span class="hex">#334155</span><span class="use">Texto de corpo</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#0F172A"></div><div class="swatch-meta"><span class="name">slate-900</span><span class="hex">#0F172A</span><span class="use">Texto primário, modal brutalista</span></div></div>
+        </div>
+
+        <h3>Institucional (ação)</h3>
+        <div>
+          <div class="swatch-row"><div class="swatch" style="background:#1E3A8A"></div><div class="swatch-meta"><span class="name">blue-900</span><span class="hex">#1E3A8A</span><span class="use">Primário — botão, marca, status atual</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#172554"></div><div class="swatch-meta"><span class="name">blue-950</span><span class="hex">#172554</span><span class="use">Hover do primário</span></div></div>
+          <div class="swatch-row"><div class="swatch" style="background:#EFF6FF"></div><div class="swatch-meta"><span class="name">blue-50</span><span class="hex">#EFF6FF</span><span class="use">Background info / tab ativa</span></div></div>
+        </div>
+
+        <h3>Semânticas (estados — nunca decoração)</h3>
+        <div class="status-strip">
+          <span class="s s-ok">SUCESSO · emerald-700</span>
+          <span class="s s-info">INFO · blue-900</span>
+          <span class="s s-warn">ATENÇÃO · amber-600</span>
+          <span class="s s-crit">CRÍTICO · red-700</span>
+          <span class="s s-neut">NEUTRO · slate-600</span>
+        </div>
+
+        <div class="info-block warn">
+          <div class="t">Regra de ouro</div>
+          Nenhum uso estético de cor. Verde/âmbar/vermelho são <strong>reservados para comunicar estado</strong> — nunca para "bonito". Banner de campanha (não-crítico) é azul ou verde apenas se a SMS marcar como sucesso/info.
+        </div>
+      </section>
+
+      <!-- ====================== TIPOGRAFIA ====================== -->
+      <section id="tipografia">
+        <h2>Tipografia</h2>
+        <p class="desc">Duas famílias: <strong>Inter</strong> (sans, corpo e títulos) e <strong>JetBrains Mono</strong> (dados estruturados, badges, protocolos). Ambas bundladas localmente em <span class="path">assets/fonts/</span>.</p>
+
+        <table>
+          <thead><tr><th>Token</th><th>Tamanho</th><th>Família</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><code>displayLarge</code></td><td>28px / 700</td><td>Inter</td><td>Título de tela ("Entrar", "Meu encaminhamento")</td></tr>
+            <tr><td><code>displayMedium</code></td><td>24px / 700</td><td>Inter</td><td>Título de seção</td></tr>
+            <tr><td><code>headlineLarge</code></td><td>20px / 700</td><td>Inter</td><td>Headline em cards grandes</td></tr>
+            <tr><td><code>headlineMedium</code></td><td>18px / 600</td><td>Inter</td><td>Headline em painéis e modais</td></tr>
+            <tr><td><code>titleLarge</code></td><td>17px / 600</td><td>Inter</td><td>Título dentro de card</td></tr>
+            <tr><td><code>titleMedium</code></td><td>15px / 600</td><td>Inter</td><td>Título compacto</td></tr>
+            <tr><td><code>bodyLarge</code></td><td>17px / 400</td><td>Inter</td><td><strong>Corpo padrão</strong> — quase tudo</td></tr>
+            <tr><td><code>bodyMedium</code></td><td>15px / 400</td><td>Inter</td><td>Texto secundário</td></tr>
+            <tr><td><code>bodySmall</code></td><td>13px / 400</td><td>Inter</td><td>Metadados, timestamps</td></tr>
+            <tr><td><code>button</code></td><td>17px / 600</td><td>Inter</td><td>Label de botão primário (<strong>NÃO uppercase</strong> — vs DS UBS)</td></tr>
+            <tr><td><code>labelInstitucional</code></td><td>11px / 700 +1.6 letter-spacing</td><td>JetBrains Mono</td><td>Único uppercase: PROTOCOLO, CPF, CARTÃO SUS</td></tr>
+            <tr><td><code>protocolo</code></td><td>16px / 700</td><td>JetBrains Mono</td><td>UBS-2026-100137</td></tr>
+            <tr><td><code>metric</code></td><td>32px / 700</td><td>JetBrains Mono</td><td>Números grandes em métricas</td></tr>
+            <tr><td><code>data</code></td><td>15px / 400</td><td>JetBrains Mono</td><td>CPF, CRM, datas</td></tr>
+            <tr><td><code>badge</code></td><td>11px / 700 +1.0 letter-spacing</td><td>JetBrains Mono</td><td>StatusBadge</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ====================== ESPAÇAMENTO ====================== -->
+      <section id="espacamento">
+        <h2>Espaçamento e bordas</h2>
+        <p class="desc">Tudo derivado de múltiplos de 4dp. Touch target mínimo 56dp.</p>
+        <table>
+          <thead><tr><th>Token</th><th>Valor</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><code>xs</code></td><td>4dp</td><td>Entre chips/badges</td></tr>
+            <tr><td><code>sm</code></td><td>8dp</td><td>Gap padrão entre ícone e texto</td></tr>
+            <tr><td><code>md</code></td><td>12dp</td><td>Padding interno padrão</td></tr>
+            <tr><td><code>lg</code></td><td>16dp</td><td>Padding de tela</td></tr>
+            <tr><td><code>xl</code></td><td>20dp</td><td>Entre seções</td></tr>
+            <tr><td><code>xxl</code></td><td>24dp</td><td>Top de seção principal</td></tr>
+            <tr><td><code>xxxl</code></td><td>32dp</td><td>Hero spacing</td></tr>
+            <tr><td><code>huge</code></td><td>48dp</td><td>Final de scroll</td></tr>
+            <tr><td><code>touchTarget</code></td><td>56dp</td><td>Mínimo absoluto pra qualquer botão/tap</td></tr>
+            <tr><td><code>buttonHeight</code></td><td>60dp</td><td>Altura padrão de PrimaryButton</td></tr>
+            <tr><td><code>contentMaxWidth</code></td><td>720dp</td><td>Max-width pra tablets em retrato</td></tr>
+          </tbody>
+        </table>
+        <h3>Bordas e radius</h3>
+        <ul>
+          <li><strong>Cantos retos sempre.</strong> Único radius permitido: <code>2dp</code> (rarissímo).</li>
+          <li><code>1dp</code> — borda padrão (slate-200)</li>
+          <li><code>2dp</code> — modal, cards de destaque (slate-900 ou cor semântica)</li>
+          <li><code>4dp</code> — border-left de InfoBlock</li>
+        </ul>
+      </section>
+
+      <!-- ====================== COMPONENTES ====================== -->
+      <section id="componentes">
+        <h2>Componentes do Design System</h2>
+        <p class="desc">17 widgets em <span class="path">lib/presentation/shared/widgets/</span>. Todos <code>StatelessWidget</code> exceto os que têm animação interna.</p>
+
+        <div class="grid-2">
+          <div class="screen-card">
+            <h4 class="title">PanelCard</h4>
+            <div class="file-ref">panel_card.dart</div>
+            <p>Cartão padrão com header opcional (gradiente sutil) + índice numerado + acento lateral colorido (4dp). Equivalente Flutter do <code>&lt;PanelHeader&gt;</code> do DS UBS.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">PrimaryButton</h4>
+            <div class="file-ref">primary_button.dart</div>
+            <p>3 variantes: <code>primary</code> (blue-900), <code>secondary</code> (outline), <code>danger</code> (red-700). Altura 60dp. Suporte a loading spinner + icon + fullWidth.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">StatusBadge</h4>
+            <div class="file-ref">status_badge.dart</div>
+            <p>Pill mono uppercase. <code>StatusBadge.fromStatus()</code> mapeia chaves do backend (AGUARDANDO_REGULACAO, AGENDADO, etc.) com cores e ícones automáticos. 5 tones, 3 tamanhos.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">StatusHeroCard</h4>
+            <div class="file-ref">status_hero_card.dart</div>
+            <p>Card principal da home. Header colorido com <strong>especialidade em destaque</strong>, status + prioridade, mensagem amigável, data/local agendados em verde, protocolo, CTA "Ver detalhes".</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">StatusRoadmap</h4>
+            <div class="file-ref">status_roadmap.dart</div>
+            <p>Roadmap vertical estilo Shopee/Mercado Livre. 5 checkpoints (Criado→Análise→Aprovado→Marcado→Feito), com estados <strong>completed</strong>/<strong>current</strong>/<strong>pending</strong>/<strong>rejected</strong>. Pulse no atual, animação cascade. Trilhas alternativas pra rejeitado/cancelado.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">IconCard</h4>
+            <div class="file-ref">icon_card.dart</div>
+            <p>Elemento principal de navegação pra paciente. Ícone 56dp + título grande + subtítulo + chevron. Touch target 72dp+. Inclui <code>CountBadge</code> opcional.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">SmsBanner</h4>
+            <div class="file-ref">sms_banner.dart</div>
+            <p>Banner de campanha/alerta. 4 tones: <strong>URGENTE</strong>, <strong>CAMPANHA</strong>, <strong>INFO</strong>, <strong>ATENCAO</strong>. Imagem opcional, CTA externo. Usado em carrossel na home.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">InfoBlock</h4>
+            <div class="file-ref">info_block.dart</div>
+            <p>Bloco com border-left 4dp colorida. 4 tons semânticos. Icon auto-derivado. Suporte a action button inline.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">FormFieldX</h4>
+            <div class="file-ref">form_field_x.dart</div>
+            <p>Input com label uppercase em cima, fonte 17px no input, modo mono pra CPF/protocolo, toggle de senha automático em obscure, validação + helperText.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">DocumentTile</h4>
+            <div class="file-ref">document_tile.dart</div>
+            <p>Tile de anexo. Ícone colorido por tipo (PDF=vermelho, IMG=verde, DOC=azul), nome + tamanho + tipo, botões Compartilhar + Baixar, progress bar de download.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">TimelineStep</h4>
+            <div class="file-ref">timeline_step.dart</div>
+            <p>Item de timeline vertical. 7 tipos: criacao, anexo, pendencia, aprovacao, agendamento, rejeicao, atualizacao. Bolinha colorida + linha conectando + mini-painel com autor.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">ProtocoloPill</h4>
+            <div class="file-ref">protocolo_pill.dart</div>
+            <p>Pílula com label uppercase + valor mono. Copy-to-clipboard ao tocar. Snackbar de confirmação.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">SectionHeader</h4>
+            <div class="file-ref">section_header.dart</div>
+            <p>Divisor de seção. Label uppercase tracking-widest em mono. <code>trailing</code> opcional (botão "Ver todas").</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">AppScaffold</h4>
+            <div class="file-ref">app_scaffold.dart</div>
+            <p>Scaffold padrão. Background <code>slate-50</code>, max-width 720dp pra tablets, padding consistente, RefreshIndicator opcional.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">LoadingView / EmptyView / ErrorView</h4>
+            <div class="file-ref">state_views.dart</div>
+            <p>Três telas de estado. Loading com spinner brutalista 3dp. Empty com ícone grande + CTA opcional. Error com border-2 red-700 + botão retry.</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">FadeIn (helper)</h4>
+            <div class="file-ref">fade_in.dart</div>
+            <p>Wrapper que faz fade + slide-up suave na entrada do widget. Suporta <code>delay</code> pra criar entradas staggered numa lista (300ms + i × 60ms).</p>
+          </div>
+          <div class="screen-card">
+            <h4 class="title">Skeleton</h4>
+            <div class="file-ref">skeleton.dart</div>
+            <p>Bloco com pulse 1.2s entre <code>slate-100</code> e <code>slate-200</code>. Variantes: <code>HeroCardSkeleton</code>, <code>IconCardSkeleton</code>, <code>ListSkeleton</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================== STATUS ROADMAP DETALHADO ====================== -->
+      <section id="roadmap">
+        <h2>StatusRoadmap — rastreio estilo Shopee</h2>
+        <p class="desc">Coração visual da experiência. Mostra a jornada do encaminhamento como uma linha de checkpoints. Mapeamento automático do <code>statusKey</code> backend → step ativo.</p>
+
+        <h3>Exemplo: encaminhamento AGENDADO</h3>
+        <div class="roadmap">
+          <div class="node done">
+            <div class="dot">✓</div>
+            <div class="content">
+              <div class="t">Encaminhamento criado</div>
+              <div class="d">Sua UBS registrou o pedido médico e enviou à Regulação.</div>
+            </div>
+          </div>
+          <div class="node done">
+            <div class="dot">✓</div>
+            <div class="content">
+              <div class="t">Em análise pela Regulação</div>
+              <div class="d">Médicos da Secretaria avaliaram seu pedido.</div>
+            </div>
+          </div>
+          <div class="node done">
+            <div class="dot">✓</div>
+            <div class="content">
+              <div class="t">Solicitação aprovada</div>
+              <div class="d">A regulação aprovou. Buscando uma data para você.</div>
+            </div>
+          </div>
+          <div class="node curr">
+            <div class="dot">📅</div>
+            <div class="content">
+              <div class="t">Consulta marcada</div>
+              <div class="d">Sua consulta foi agendada. Veja os detalhes acima.</div>
+              <div class="now-pill"><span style="display:inline-block;width:8px;height:8px;background:var(--blue-900);"></span> ETAPA ATUAL</div>
+            </div>
+          </div>
+          <div class="node pend">
+            <div class="dot">✓</div>
+            <div class="content">
+              <div class="t">Atendimento realizado</div>
+              <div class="d">Você foi atendido. Acompanhe os retornos com sua UBS.</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>Mapeamento status → step ativo</h3>
+        <table>
+          <thead><tr><th>Status backend</th><th>Step ativo (0-4)</th><th>Notas visuais</th></tr></thead>
+          <tbody>
+            <tr><td><code>RASCUNHO</code></td><td>0 (Criado, current)</td><td>—</td></tr>
+            <tr><td><code>AGUARDANDO_REGULACAO</code></td><td>1 (Em análise, current)</td><td>Step 0 done</td></tr>
+            <tr><td><code>EM_ANALISE</code></td><td>1 (current)</td><td>Step 0 done</td></tr>
+            <tr><td><code>PENDENCIA_DOCUMENTO</code></td><td>1 (current, warning âmbar)</td><td>Ícone troca pra warning, palette âmbar</td></tr>
+            <tr><td><code>APROVADO</code> / <code>AGUARDANDO_AGENDAMENTO</code></td><td>2 (Aprovado, current)</td><td>0, 1 done</td></tr>
+            <tr><td><code>AGENDADO</code></td><td>3 (Marcado, current)</td><td>0-2 done</td></tr>
+            <tr><td><code>CONCLUIDO</code></td><td>4 (Feito, current)</td><td>0-3 done</td></tr>
+            <tr><td><code>REJEITADO</code></td><td>Trilha alternativa</td><td>Step 1 substituído por "Solicitação recusada" vermelho, com motivoRejeicao</td></tr>
+            <tr><td><code>CANCELADO</code></td><td>Trilha alternativa</td><td>Step 1 substituído por "Encaminhamento cancelado" cinza</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ====================== TELAS — AUTH ====================== -->
+      <section id="auth">
+        <h2>Telas — Auth</h2>
+        <p class="desc">Fluxo de entrada do paciente. CPF + senha. Recuperação por SMS/email cadastrado na UBS.</p>
+
+        <div class="screen-card">
+          <span class="route">/</span>
+          <h4 class="title">Splash</h4>
+          <div class="file-ref">presentation/features/auth/splash_page.dart</div>
+          <ul>
+            <li>Background <code>blue-900</code> institucional</li>
+            <li>Logo "U" 104×104dp <strong>com pulse</strong> (scale 0.96 ↔ 1.02 a cada 1.4s)</li>
+            <li>"UNISISM" mono +4 letter-spacing + "PACIENTE" mono +6</li>
+            <li>"Carregando seus dados..." com fade</li>
+            <li>Listen no <code>authControllerProvider</code> → redireciona pra <code>/home</code> (se autenticado e onboarding visto), <code>/onboarding</code> (primeira vez), ou <code>/login</code></li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/login</span>
+          <h4 class="title">Login</h4>
+          <div class="file-ref">presentation/features/auth/login_page.dart</div>
+          <ul>
+            <li>Brand "UNISISM PACIENTE" no topo</li>
+            <li>Form: CPF (máscara <code>###.###.###-##</code>, mono) + Senha (com toggle de visibilidade)</li>
+            <li>Link "Esqueci minha senha" alinhado à direita</li>
+            <li>PrimaryButton "Entrar" full-width 60dp</li>
+            <li>Validação: CPF 11 dígitos, senha mín 4 chars</li>
+            <li>Hint mock: "use senha123"</li>
+            <li>Erro inline via <code>InfoBlock(critical)</code></li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/esqueci-senha</span>
+          <h4 class="title">Esqueci minha senha</h4>
+          <div class="file-ref">presentation/features/auth/esqueci_senha_page.dart</div>
+          <ul>
+            <li>Input CPF com máscara</li>
+            <li>Botão "Enviar instruções"</li>
+            <li>Após envio: tela de sucesso com check 88×88 verde + CTA "Voltar pro login"</li>
+            <li>Resposta 204 mesmo se CPF não existir (anti-enumeration)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== ONBOARDING ====================== -->
+      <section id="onboarding">
+        <h2>Onboarding</h2>
+        <p class="desc">3 slides apresentando as principais features. Mostrado <strong>uma única vez</strong> após primeiro login (gating via <code>shared_preferences</code>).</p>
+        <div class="screen-card">
+          <span class="route">/onboarding</span>
+          <div class="file-ref">presentation/features/onboarding/onboarding_page.dart</div>
+          <ul>
+            <li><strong>Slide 1:</strong> "Acompanhe seu encaminhamento" — ícone medical_information azul-900</li>
+            <li><strong>Slide 2:</strong> "Peça transporte (TFD)" — ícone directions_bus verde-700</li>
+            <li><strong>Slide 3:</strong> "Receba avisos importantes" — ícone notifications âmbar-600</li>
+            <li>Cada ícone entra com <code>easeOutBack</code> (scale 0.85→1)</li>
+            <li>Indicador de página (largura 8→28dp animada)</li>
+            <li>Botão "Continuar" / "Começar a usar" no último</li>
+            <li>Link "Pular" no canto superior</li>
+            <li>Após terminar: <code>SharedPreferences.setBool(kOnboardingDone, true)</code> → <code>go('/home')</code></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== SHELL ====================== -->
+      <section id="shell">
+        <h2>Shell + Bottom Nav</h2>
+        <p class="desc">Container das 4 abas principais. <code>ShellRoute</code> do go_router com bottom nav customizada (não Material 3 NavigationBar).</p>
+
+        <div class="screen-card">
+          <div class="file-ref">presentation/features/main_shell.dart</div>
+          <table>
+            <thead><tr><th>Aba</th><th>Rota</th><th>Ícone</th><th>Badge</th></tr></thead>
+            <tbody>
+              <tr><td>Início</td><td><code>/home</code></td><td>home</td><td>—</td></tr>
+              <tr><td>Saúde</td><td><code>/dossie</code></td><td>medical_information</td><td>—</td></tr>
+              <tr><td>Avisos</td><td><code>/notificacoes</code></td><td>notifications</td><td>CountBadge dinâmico (não-lidas)</td></tr>
+              <tr><td>Perfil</td><td><code>/perfil</code></td><td>person</td><td>—</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li>Bottom nav 76dp altura, cantos retos, border-top 1dp slate-200</li>
+            <li>Tab ativa: border-top 3dp blue-900, ícone preenchido, label bold blue-900</li>
+            <li>Tab inativa: ícone outline slate-600, label medium slate-600</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== HOME ====================== -->
+      <section id="home">
+        <h2>Home — Central de comando</h2>
+        <p class="desc">Tela principal. Greeting personalizado + carrossel de encaminhamentos ativos + carrossel de banners da SMS + ações rápidas + últimas notificações.</p>
+
+        <div class="screen-card">
+          <span class="route">/home</span>
+          <div class="file-ref">presentation/features/home/home_page.dart</div>
+          <h4 class="title">Estrutura vertical</h4>
+          <div class="flow">
+            <div class="step"><div class="n">1</div><div><strong>Greeting</strong><br><small>Avatar com iniciais (52dp blue-900) + "Bom dia/tarde/noite, [Primeiro Nome]"</small></div></div>
+            <div class="step"><div class="n">2</div><div><strong>Section Header</strong> "Seu encaminhamento" ou "Seus encaminhamentos"<br><small>Badge "N ATIVOS" quando &gt; 1</small></div></div>
+            <div class="step"><div class="n">3</div><div><strong>Carrossel de encaminhamentos ativos</strong> (PageView)<br><small>1 ativo: StatusHeroCard direto. 2+: swipe horizontal + dots + "Deslize para ver os outros"</small></div></div>
+            <div class="step"><div class="n">4</div><div><strong>Banners da Secretaria</strong> (carrossel)<br><small>Imagem + tone (URGENTE/CAMPANHA/INFO/ATENCAO) + título + corpo + CTA "Ver detalhes"</small></div></div>
+            <div class="step"><div class="n">5</div><div><strong>Ações rápidas</strong> (5 IconCards staggered)<br><small>Histórico de saúde · TFD · Minha UBS · Falar com UBS · Encaminhamentos anteriores</small></div></div>
+            <div class="step"><div class="n">6</div><div><strong>Últimas mensagens</strong> (preview de 3 notificações)<br><small>Tiles com unread dot + tap → marca lida + abre deeplink</small></div></div>
+          </div>
+
+          <h4 class="title">Animações</h4>
+          <ul>
+            <li>Entrada staggered (FadeIn delays 0/80/160/240/300+i×60/540ms)</li>
+            <li>RefreshIndicator com pull-to-refresh</li>
+            <li>Skeleton no carrossel enquanto carrega</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== ENCAMINHAMENTOS ====================== -->
+      <section id="encaminhamentos">
+        <h2>Encaminhamentos</h2>
+        <p class="desc">4 telas: lista, detalhe, timeline, anexos. Núcleo da feature #1.</p>
+
+        <div class="screen-card">
+          <span class="route">/encaminhamentos</span>
+          <h4 class="title">Lista de encaminhamentos</h4>
+          <div class="file-ref">presentation/features/encaminhamento/encaminhamentos_list_page.dart</div>
+          <ul>
+            <li>Separa "Em andamento" e "Histórico"</li>
+            <li>Card com ícone, especialidade (titleLarge), protocolo (mono), badge de status + prioridade (Wrap)</li>
+            <li><strong>MiniRoadmap</strong>: 4 bolinhas com checks pra mostrar progresso visual direto na lista (Criado→Análise→Aprovado→Marcado→Feito)</li>
+            <li>Footer com data de abertura + arrow</li>
+            <li>Trilha alternativa pra REJEITADO/CANCELADO com texto e ícone vermelho</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/encaminhamento/:id</span>
+          <h4 class="title">Detalhe do encaminhamento</h4>
+          <div class="file-ref">presentation/features/encaminhamento/encaminhamento_detail_page.dart</div>
+          <ul>
+            <li><strong>StatusHeroCard</strong> no topo (especialidade destacada)</li>
+            <li><strong>StatusRoadmap</strong> completo (5 checkpoints)</li>
+            <li>Bloco "Sua consulta" (se agendado): dia/hora + local + "O que levar"</li>
+            <li>"Observação da Regulação" e "Pendências abertas" se aplicável (InfoBlock)</li>
+            <li>"Resumo clínico": especialidade, prioridade, CID-10, médico, UBS</li>
+            <li>"Justificativa do médico" em painel</li>
+            <li>3 ações: Ver timeline · Documentos · Pedir TFD</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/encaminhamento/:id/timeline</span>
+          <h4 class="title">Linha do tempo</h4>
+          <div class="file-ref">presentation/features/encaminhamento/encaminhamento_timeline_page.dart</div>
+          <ul>
+            <li>ListView com <code>TimelineStep</code></li>
+            <li>5 eventos demo: Criação → Anexo → Em análise → Aprovação → Agendamento</li>
+            <li>Cada item: bolinha colorida por tipo + linha vertical + mini-painel branco (título, descrição, autor+papel, data mono)</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/encaminhamento/:id/anexos</span>
+          <h4 class="title">Documentos anexados</h4>
+          <div class="file-ref">presentation/features/encaminhamento/encaminhamento_anexos_page.dart</div>
+          <ul>
+            <li>3 anexos demo (PDF da solicitação, ECG, Cartão SUS jpg)</li>
+            <li><code>DocumentTile</code> com ícone colorido por tipo</li>
+            <li>3 ações por tile: Abrir · Baixar · Compartilhar (mocked com snackbar; integração real via dio + open_filex + share_plus)</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== DOSSIÊ ====================== -->
+      <section id="dossie">
+        <h2>Dossiê médico</h2>
+        <p class="desc">Histórico de saúde do paciente. Aba "Saúde" da bottom nav.</p>
+
+        <div class="screen-card">
+          <span class="route">/dossie</span>
+          <h4 class="title">Visão geral</h4>
+          <div class="file-ref">presentation/features/dossie/dossie_page.dart</div>
+          <ul>
+            <li><strong>Cartão de Identidade</strong> dark (slate-900) com avatar + nome + CIDADÃO + CPF + Cartão SUS</li>
+            <li><strong>Grid 2×2 de métricas</strong>: Consultas, Vacinas, Pedidos médicos, Tipo sangue</li>
+            <li>InfoBlocks coloridos: Alergias (crítico vermelho), Condições contínuas (warning âmbar), Remédios uso contínuo (info azul)</li>
+            <li>3 IconCards de navegação: Atendimentos, Vacinas, Exames</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/dossie/atendimentos</span>
+          <h4 class="title">Atendimentos</h4>
+          <div class="file-ref">presentation/features/dossie/dossie_atendimentos_page.dart</div>
+          <ul>
+            <li>Chip horizontal de filtros: Todos · Consultas · Emergências · Exames · Vacinas · Retornos</li>
+            <li>Card por atendimento: bloco de data (dia + mês mono) à esquerda + tipo (badge colorido) + profissional + local</li>
+            <li>Motivo da consulta + CID-10 (mono) + Conduta (border-left azul destacada)</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/dossie/vacinacoes</span>
+          <h4 class="title">Carteira de vacinação</h4>
+          <div class="file-ref">presentation/features/dossie/dossie_vacinacoes_page.dart</div>
+          <ul>
+            <li>Hero verde (emerald-700) com contador grande: "14 vacinas aplicadas"</li>
+            <li>Lista de vacinas com check ✓ branco em quadrado verde 52dp</li>
+            <li>Vacina + dose (chip azul) + "Aplicada em ... / Aplicada há X dias|meses|anos" + local + lote (mono)</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/dossie/exames</span>
+          <h4 class="title">Exames</h4>
+          <div class="file-ref">presentation/features/dossie/dossie_exames_page.dart</div>
+          <ul>
+            <li>Resumo no topo: verde "todos normais" ou âmbar "X exames alterados"</li>
+            <li>Toggle "Mostrar apenas alterados" (Switch)</li>
+            <li>Card por exame: faixa lateral de 4dp colorida (verde=normal/âmbar=alterado) + ícone + nome + badge + meta (data, solicitante) + Resultado destacado em border-left</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== TFD ====================== -->
+      <section id="tfd">
+        <h2>TFD — Transporte sanitário</h2>
+        <p class="desc">"Blablacar" municipal: SMS programa viagens em vans/ônibus pra outras cidades; paciente solicita vaga; regulação aprova → assento numerado.</p>
+
+        <div class="screen-card">
+          <span class="route">/tfd</span>
+          <h4 class="title">Lista TFD (2 abas)</h4>
+          <div class="file-ref">presentation/features/tfd/tfd_list_page.dart</div>
+          <ul>
+            <li><strong>Aba 1: Viagens disponíveis</strong> — cards com destino, data, embarque, ocupação visual (barra de progresso), botão "Pedir vaga"</li>
+            <li><strong>Aba 2: Minhas solicitações</strong> — suas solicitações com status badge + se APROVADA, mostra <strong>assento numerado destacado em verde</strong></li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/tfd/solicitar/:viagemId</span>
+          <h4 class="title">Pedir vaga (com prioridade opcional)</h4>
+          <div class="file-ref">presentation/features/tfd/tfd_solicitar_page.dart</div>
+          <ul>
+            <li>Resumo da viagem (PanelCard A): destino, data, hora, embarque, vagas, observações</li>
+            <li><strong>Card educativo</strong>: muda de cor/ícone quando o toggle ativo — "Quer prioridade?" (info azul) ↔ "Pedido com prioridade alta" (star âmbar)</li>
+            <li><strong>Toggle "Anexar meu encaminhamento médico"</strong>: switch adaptativo. Ativo → seletor aparece, prioridade=PRIORITÁRIA. Inativo → sem encaminhamento, prioridade=NORMAL</li>
+            <li>Seletor radio-cards de encaminhamentos ativos (quando toggle ativo)</li>
+            <li>Form: justificativa (mín 10 chars) + acompanhante opcional</li>
+            <li>PrimaryButton "Enviar pedido" + secondary "Cancelar"</li>
+          </ul>
+          <div class="info-block">
+            <div class="t">Regra de negócio</div>
+            Backend deve <strong>derivar</strong> a prioridade automaticamente: sem <code>encaminhamentoId</code> → NORMAL. Com <code>encaminhamentoId</code> válido → PRIORITARIA. Com encaminhamento de prioridade URGENTE/EMERGENCIA → URGENTE.
+          </div>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/tfd/solicitacao/:id</span>
+          <h4 class="title">Detalhe da solicitação</h4>
+          <div class="file-ref">presentation/features/tfd/tfd_detail_solicitacao_page.dart</div>
+          <ul>
+            <li>Se APROVADA: <strong>Card de assento gigante</strong> verde com número 52px mono + veículo + placa</li>
+            <li>Se aguardando/recusada/cancelada: PanelCard com status + explicação</li>
+            <li>Detalhes da viagem (destino, data, hora, embarque, veículo, motorista)</li>
+            <li>Badge de prioridade dedicado (NORMAL/PRIORITARIA/URGENTE) com cor própria</li>
+            <li>Bloco "Detalhes do pedido": encaminhamento anexado (se houver), justificativa, acompanhante, motivo da recusa</li>
+            <li>Se AGUARDANDO: botão "Cancelar este pedido" (variant danger) com confirmação modal</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== BANNERS ====================== -->
+      <section id="banners-screens">
+        <h2>Banners — Comunicados da Secretaria</h2>
+        <p class="desc">CMS leve da SMS pra publicar campanhas, alertas e comunicados. Apenas leitura no app.</p>
+        <div class="screen-card">
+          <span class="route">/banner/:id</span>
+          <h4 class="title">Detalhe do banner</h4>
+          <div class="file-ref">presentation/features/banners/banner_detail_page.dart</div>
+          <ul>
+            <li>Imagem 16:9 full-width (cached_network_image)</li>
+            <li>Tag colorida por tone (URGENTE vermelho, CAMPANHA verde, INFO azul, ATENCAO âmbar) + data de publicação</li>
+            <li>Título grande + corpo</li>
+            <li>InfoBlock "Este aviso fica disponível até [data]" se houver expiração</li>
+            <li>CTA externo (url_launcher) se backend fornecer <code>ctaUrl</code></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== NOTIFICAÇÕES ====================== -->
+      <section id="notificacoes">
+        <h2>Notificações — Inbox</h2>
+        <p class="desc">Histórico de tudo que aconteceu pro paciente. Cada notificação tem deep-link pra abrir o recurso.</p>
+        <div class="screen-card">
+          <span class="route">/notificacoes</span>
+          <div class="file-ref">presentation/features/notificacoes/notificacoes_page.dart</div>
+          <ul>
+            <li>AppBar com action "Marcar todas lidas"</li>
+            <li>Cards diferenciados: <strong>não lida</strong> tem fundo blue-50 + border-2 blue-700 + dot vermelho 10dp</li>
+            <li>Ícone colorido por tone (SUCCESS verde, WARNING âmbar, CRITICAL vermelho, INFO azul)</li>
+            <li>Ícone por tipo (ENCAMINHAMENTO med_info, TFD bus, CAMPANHA campaign, ALERTA warning, SISTEMA settings)</li>
+            <li>Tap → marca lida + abre deepLink (ex: <code>/encaminhamento/enc-100137</code>)</li>
+            <li>Pull-to-refresh</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== UBS ====================== -->
+      <section id="ubs">
+        <h2>UBS — Unidade Básica vinculada</h2>
+        <p class="desc">Informações da UBS do paciente + canais de contato.</p>
+
+        <div class="screen-card">
+          <span class="route">/ubs</span>
+          <h4 class="title">Minha UBS</h4>
+          <div class="file-ref">presentation/features/ubs/minha_ubs_page.dart</div>
+          <ul>
+            <li>Header institucional <code>blue-900</code> com avatar branco + nome da UBS + chip mono com horário</li>
+            <li>Grid 3 colunas de ações grandes: <strong>Ligar</strong> (verde) · <strong>WhatsApp</strong> (#25D366) · <strong>Chegar</strong> (âmbar)</li>
+            <li>PanelCard Endereço: rua, bairro/cidade/UF, CEP (mono)</li>
+            <li>PanelCard Horário de atendimento</li>
+            <li>InfoBlock Observações (serviços extras: vacinação rotina, curativos, coleta)</li>
+            <li>PanelCard Equipe responsável (coordenadores)</li>
+            <li>CTA "Falar com a UBS" → /ubs/falar</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/ubs/falar</span>
+          <h4 class="title">Falar com a UBS</h4>
+          <div class="file-ref">presentation/features/ubs/falar_com_ubs_page.dart</div>
+          <ul>
+            <li>Header InfoBlock com nome da UBS + horário</li>
+            <li>4 canais grandes em cards: <strong>Ligar</strong> (tel:) · <strong>WhatsApp</strong> (wa.me) · <strong>Email</strong> (mailto:) · <strong>Ir até a UBS</strong> (Google Maps)</li>
+            <li>InfoBlock crítico no final: "Emergência? SAMU 192" com botão direto</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== PERFIL ====================== -->
+      <section id="perfil">
+        <h2>Perfil + sub-rotas</h2>
+        <div class="screen-card">
+          <span class="route">/perfil</span>
+          <h4 class="title">Perfil</h4>
+          <div class="file-ref">presentation/features/perfil/perfil_page.dart</div>
+          <ul>
+            <li>Hero card: avatar 88dp com iniciais + nome (maxLines 2) + "X anos · nascido em DD/MM/AAAA"</li>
+            <li>PanelCard "Seus dados": CPF, Cartão SUS, Nascimento, Telefone, Email, Sua UBS (com divisores)</li>
+            <li>4 IconCards: <strong>Trocar senha · Avisos do app · Minha UBS · Ajuda e dúvidas</strong></li>
+            <li>PrimaryButton danger "Sair do app" com modal de confirmação</li>
+            <li>Footer: versão + build</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/perfil/trocar-senha</span>
+          <h4 class="title">Trocar senha</h4>
+          <div class="file-ref">presentation/features/perfil/trocar_senha_page.dart</div>
+          <ul>
+            <li>InfoBlock instrutivo</li>
+            <li>3 campos: senha atual, nova senha (mín 6), repetir nova</li>
+            <li>Validação cruzada (campos batem)</li>
+            <li>Tela de sucesso com check verde 96dp + CTA "Voltar pro perfil"</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/perfil/notificacoes</span>
+          <h4 class="title">Preferências de notificação</h4>
+          <div class="file-ref">presentation/features/perfil/preferencias_notificacao_page.dart</div>
+          <ul>
+            <li>4 categorias com switches: Meu encaminhamento · TFD · Campanhas · Alertas urgentes (<strong>travado ativo</strong>)</li>
+            <li>2 prefs sensoriais: Som · Vibração</li>
+            <li>PrimaryButton "Salvar preferências"</li>
+          </ul>
+        </div>
+
+        <div class="screen-card">
+          <span class="route">/perfil/ajuda</span>
+          <h4 class="title">Ajuda e dúvidas</h4>
+          <div class="file-ref">presentation/features/perfil/ajuda_page.dart</div>
+          <ul>
+            <li>7 perguntas frequentes expansíveis (AnimatedSize + chevron rotacionando)</li>
+            <li>3 contatos importantes com botão Ligar: SAMU 192, Disque Saúde 136, Ouvidoria SUS 136</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ====================== MODELOS DE DADOS ====================== -->
+      <section id="dados">
+        <h2>Modelos de dados</h2>
+        <p class="desc">8 entidades em <span class="path">lib/data/models/</span>. Todos com <code>fromJson</code> manual (sem code-gen) — leitura fácil.</p>
+
+        <details open>
+          <summary>Paciente</summary>
+          <div>
+            <p>Cidadão logado. Resposta de <code>/auth/paciente/me</code>.</p>
+<pre><span class="k">class</span> <span class="t">Paciente</span> {
+  <span class="t">String</span> id;
+  <span class="t">String</span> nome;
+  <span class="t">String</span> cpf;           <span class="c">// formatado "123.456.789-09"</span>
+  <span class="t">DateTime</span> dataNascimento;
+  <span class="t">String</span>? cartaoSus;
+  <span class="t">String</span>? email;
+  <span class="t">String</span>? telefone;
+  <span class="t">String</span>? fotoUrl;
+  <span class="t">String</span>? ubsVinculadaId;
+  <span class="t">String</span>? ubsVinculadaNome;
+
+  <span class="t">String</span> <span class="k">get</span> primeiroNome;
+  <span class="t">String</span> <span class="k">get</span> iniciais;     <span class="c">// "MS" pra "Maria Souza"</span>
+}</pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Sessao</summary>
+          <div>
+            <p>Resposta de <code>/auth/paciente/login</code> e <code>/refresh</code>.</p>
+<pre><span class="k">class</span> <span class="t">Sessao</span> {
+  <span class="t">String</span> accessToken;
+  <span class="t">String</span> refreshToken;
+  <span class="t">DateTime</span> expiresAt;
+  <span class="t">Paciente</span> paciente;
+}</pre>
+          </div>
+        </details>
+
+        <details open>
+          <summary>Encaminhamento</summary>
+          <div>
+<pre><span class="k">class</span> <span class="t">Encaminhamento</span> {
+  <span class="t">String</span> id;
+  <span class="t">String</span> protocolo;          <span class="c">// "UBS-2026-100137"</span>
+  <span class="t">String</span> status;             <span class="c">// enum canônico</span>
+  <span class="t">String</span> prioridade;
+  <span class="t">String</span> especialidade;
+  <span class="t">String</span>? cid10;
+  <span class="t">String</span>? cid10Descricao;
+  <span class="t">String</span>? justificativaResumida;
+  <span class="t">String</span>? ubsOrigemNome;
+  <span class="t">String</span>? medicoSolicitanteNome;
+  <span class="t">DateTime</span>? dataAgendamento;
+  <span class="t">String</span>? localAgendamento;
+  <span class="t">String</span>? observacoesRegulacao;
+  <span class="t">String</span>? motivoRejeicao;
+  <span class="t">int</span> pendenciasAbertas;
+  <span class="t">bool</span> podeSolicitarTfd;
+  <span class="t">DateTime</span> criadoEm;
+  <span class="t">DateTime</span> atualizadoEm;
+
+  <span class="t">String</span> <span class="k">get</span> mensagemPaciente;  <span class="c">// frase amigável por status</span>
+  <span class="t">String</span> <span class="k">get</span> statusLabel;       <span class="c">// "Esperando análise" etc.</span>
+}
+
+<span class="k">class</span> <span class="t">Anexo</span> { String id, nome, tipo; <span class="t">int</span> tamanhoBytes; ... }
+<span class="k">class</span> <span class="t">EventoTimeline</span> { String tipo, titulo; <span class="t">DateTime</span> em; ... }</pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Dossie (resumo + atendimentos + vacinas + exames)</summary>
+          <div>
+<pre><span class="k">class</span> <span class="t">DossieResumo</span> {
+  <span class="t">int</span> totalEncaminhamentos, totalAtendimentos, totalVacinas;
+  <span class="t">String</span>? tipoSanguineo;
+  <span class="t">List</span>&lt;<span class="t">String</span>&gt; alergias, condicoesCronicas, medicamentosUsoContinuo;
+}
+
+<span class="k">class</span> <span class="t">Atendimento</span> {
+  <span class="t">DateTime</span> data;
+  <span class="t">String</span> tipo;          <span class="c">// CONSULTA | EMERGENCIA | EXAME | VACINACAO | RETORNO</span>
+  <span class="t">String</span> localNome, profissionalNome, profissionalEspecialidade;
+  <span class="t">String</span>? queixaPrincipal, cid10, cid10Descricao, condutaResumida;
+}
+
+<span class="k">class</span> <span class="t">Vacinacao</span> { vacina, dose, aplicadaEm, lote, localAplicacao; }
+<span class="k">class</span> <span class="t">Exame</span> { nome, realizadoEm, solicitanteNome, resultadoResumo; <span class="t">bool</span> alterado; ... }</pre>
+          </div>
+        </details>
+
+        <details open>
+          <summary>TFD (Viagem + Solicitação)</summary>
+          <div>
+<pre><span class="k">class</span> <span class="t">TfdViagem</span> {
+  <span class="t">String</span> destinoCidade, destinoUf, destinoLocal;
+  <span class="t">DateTime</span> dataPartida;
+  <span class="t">String</span> horaPartida, localEmbarque;
+  <span class="t">int</span> vagasTotal, vagasOcupadas;
+  <span class="t">String</span> veiculoDescricao, veiculoPlaca;
+  <span class="t">String</span>? motoristaNome, observacoes;
+
+  <span class="t">int</span> <span class="k">get</span> vagasDisponiveis;
+  <span class="t">bool</span> <span class="k">get</span> temVaga;
+  <span class="t">double</span> <span class="k">get</span> ocupacaoPct;
+}
+
+<span class="k">class</span> <span class="t">TfdSolicitacao</span> {
+  <span class="t">String</span> id, viagemId, status;
+  <span class="t">String</span> prioridade;         <span class="c">// NORMAL | PRIORITARIA | URGENTE</span>
+  <span class="t">DateTime</span> criadaEm;
+  <span class="t">TfdViagem</span> viagem;          <span class="c">// embedado</span>
+  <span class="t">String</span>? numeroAssento, justificativaPaciente, motivoRecusa;
+  <span class="t">String</span>? encaminhamentoProtocolo, acompanhante;
+  <span class="t">DateTime</span>? aprovadaEm;
+}</pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Banner (SmsBannerModel)</summary>
+          <div>
+<pre><span class="k">class</span> <span class="t">SmsBannerModel</span> {
+  <span class="t">String</span> id, titulo, corpo, tone;  <span class="c">// URGENTE | CAMPANHA | INFO | ATENCAO</span>
+  <span class="t">DateTime</span> publicadoEm;
+  <span class="t">String</span>? imagemUrl, ctaLabel, ctaUrl;
+  <span class="t">DateTime</span>? expiraEm;
+  <span class="t">int</span> prioridadeOrdem;
+}</pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Notificacao</summary>
+          <div>
+<pre><span class="k">class</span> <span class="t">Notificacao</span> {
+  <span class="t">String</span> id, tipo, titulo, corpo;
+  <span class="t">DateTime</span> em;
+  <span class="t">bool</span> lida;
+  <span class="t">String</span>? deepLink;              <span class="c">// "/encaminhamento/enc-123"</span>
+  <span class="t">String</span>? encaminhamentoId, tfdSolicitacaoId;
+  <span class="t">String</span> tone;                  <span class="c">// INFO | SUCCESS | WARNING | CRITICAL</span>
+}</pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Ubs</summary>
+          <div>
+<pre><span class="k">class</span> <span class="t">Ubs</span> {
+  <span class="t">String</span> id, nome, endereco, bairro, cidade, uf, cep, telefone;
+  <span class="t">String</span>? whatsapp, email;
+  <span class="t">String</span> horarioFuncionamento;
+  <span class="t">List</span>&lt;<span class="t">String</span>&gt; coordenadoresNomes;
+  <span class="t">double</span>? latitude, longitude;
+  <span class="t">String</span>? observacoes;
+}</pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- ====================== REPOSITORIES ====================== -->
+      <section id="repositories">
+        <h2>Repositories (Mock + HTTP)</h2>
+        <p class="desc">Cada repository tem 3 partes: <strong>abstract class</strong> (contrato), <strong>RepositoryHttp</strong> (Dio), <strong>RepositoryMock</strong> (in-memory).</p>
+
+        <table>
+          <thead><tr><th>Repository</th><th>Métodos</th></tr></thead>
+          <tbody>
+            <tr><td><code>AuthRepository</code></td><td>login, refresh, logout, me, esqueciSenha, redefinirSenha, registrarDispositivo</td></tr>
+            <tr><td><code>EncaminhamentoRepository</code></td><td>listar, ativo, obter(id), anexos(id), timeline(id), urlDownloadAnexo</td></tr>
+            <tr><td><code>DossieRepository</code></td><td>resumo, atendimentos, vacinacoes, exames</td></tr>
+            <tr><td><code>TfdRepository</code></td><td>listarViagens, obterViagem, minhasSolicitacoes, obterSolicitacao, solicitar, cancelar</td></tr>
+            <tr><td><code>BannerRepository</code></td><td>ativos, marcarVisto</td></tr>
+            <tr><td><code>NotificacaoRepository</code></td><td>listar, contagemNaoLidas, marcarLida, marcarTodasLidas</td></tr>
+            <tr><td><code>UbsRepository</code></td><td>minha</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Mock seed (dados demo realistas)</h3>
+        <p>Em <span class="path">lib/data/repositories/mock/mock_seed.dart</span>:</p>
+        <ul>
+          <li><strong>Paciente:</strong> Maria Aparecida Souza, 62 anos, CPF formatado, Cartão SUS, vinculada à UBS Centro</li>
+          <li><strong>4 encaminhamentos:</strong> Cardiologia (AGENDADO), Endocrinologia (AGUARDANDO_REGULACAO), Ortopedia (PENDENCIA_DOCUMENTO), Oftalmologia (CONCLUIDO)</li>
+          <li><strong>3 anexos:</strong> PDF solicitação, ECG PDF, Cartão SUS JPG</li>
+          <li><strong>5 eventos de timeline:</strong> criação → anexo → análise → aprovação → agendamento</li>
+          <li><strong>Dossiê:</strong> 14 vacinas, 21 atendimentos, alergias (Dipirona, Iodo), HAS+DM2, 3 medicamentos contínuos</li>
+          <li><strong>3 viagens TFD:</strong> &lt;Cidade-Destino&gt; (12 dias, 5 vagas), &lt;Cidade-Destino&gt; (5 dias, 1 vaga), &lt;Cidade-Destino&gt; (20 dias, 11 vagas)</li>
+          <li><strong>3 banners:</strong> Campanha gripe, Alerta dengue (URGENTE), Mutirão exames cardiológicos</li>
+          <li><strong>4 notificações:</strong> Consulta marcada (não-lida), Vaga TFD confirmada (não-lida), Solicitação aprovada (lida), Vacinação começou (lida)</li>
+        </ul>
+      </section>
+
+      <!-- ====================== PROVIDERS ====================== -->
+      <section id="providers">
+        <h2>Providers (Riverpod)</h2>
+        <p class="desc">Estado global em <span class="path">lib/providers/</span>. Cada feature tem seu controller.</p>
+
+        <table>
+          <thead><tr><th>Provider</th><th>Tipo</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><code>apiClientProvider</code></td><td>Provider&lt;ApiClient&gt;</td><td>Singleton do Dio</td></tr>
+            <tr><td><code>authRepositoryProvider</code></td><td>Provider&lt;AuthRepository&gt;</td><td>Mock vs Http baseado em <code>useMockData</code></td></tr>
+            <tr><td><code>encaminhamentoRepositoryProvider</code></td><td>Provider</td><td>idem</td></tr>
+            <tr><td><code>dossieRepositoryProvider</code></td><td>Provider</td><td>idem</td></tr>
+            <tr><td><code>tfdRepositoryProvider</code></td><td>Provider</td><td>idem</td></tr>
+            <tr><td><code>bannerRepositoryProvider</code></td><td>Provider</td><td>idem</td></tr>
+            <tr><td><code>notificacaoRepositoryProvider</code></td><td>Provider</td><td>idem</td></tr>
+            <tr><td><code>ubsRepositoryProvider</code></td><td>Provider</td><td>idem</td></tr>
+            <tr><td><code>authControllerProvider</code></td><td>NotifierProvider&lt;AuthController, AuthState&gt;</td><td>Estado de autenticação global</td></tr>
+            <tr><td><code>encaminhamentoAtivoProvider</code></td><td>FutureProvider.autoDispose</td><td>Encaminhamento ativo mais recente</td></tr>
+            <tr><td><code>encaminhamentosAtivosProvider</code></td><td>FutureProvider.autoDispose</td><td>Lista de ativos (carrossel home)</td></tr>
+            <tr><td><code>encaminhamentosProvider</code></td><td>FutureProvider.autoDispose</td><td>Lista completa</td></tr>
+            <tr><td><code>encaminhamentoByIdProvider</code></td><td>FutureProvider.family&lt;String&gt;</td><td>Detalhe</td></tr>
+            <tr><td><code>anexosProvider, timelineProvider</code></td><td>family&lt;String&gt;</td><td>Por id</td></tr>
+            <tr><td><code>dossieResumoProvider, atendimentosProvider, vacinacoesProvider, examesProvider</code></td><td>FutureProvider</td><td>Dossiê</td></tr>
+            <tr><td><code>viagensTfdProvider, solicitacoesTfdProvider, viagemTfdProvider(id), solicitacaoTfdProvider(id)</code></td><td>FutureProvider</td><td>TFD</td></tr>
+            <tr><td><code>tfdControllerProvider</code></td><td>NotifierProvider</td><td>solicitar / cancelar</td></tr>
+            <tr><td><code>bannersAtivosProvider</code></td><td>FutureProvider</td><td>Banners ordenados por prioridade</td></tr>
+            <tr><td><code>notificacoesListProvider, naoLidasCountProvider</code></td><td>FutureProvider.autoDispose</td><td>Inbox</td></tr>
+            <tr><td><code>notificacaoControllerProvider</code></td><td>NotifierProvider</td><td>marcarLida / marcarTodasLidas</td></tr>
+            <tr><td><code>minhaUbsProvider</code></td><td>FutureProvider.autoDispose</td><td>UBS vinculada</td></tr>
+            <tr><td><code>routerProvider</code></td><td>Provider&lt;GoRouter&gt;</td><td>Router com auth-refresh listener</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Padrão de auth state</h3>
+<pre><span class="k">enum</span> <span class="t">AuthStatus</span> { checking, signingIn, authenticated, unauthenticated, error }
+
+<span class="k">class</span> <span class="t">AuthState</span> {
+  <span class="t">AuthStatus</span> status;
+  <span class="t">Paciente</span>? paciente;
+  <span class="t">String</span>? errorMessage;
+  <span class="t">bool</span> <span class="k">get</span> isAuthenticated;
+  <span class="t">bool</span> <span class="k">get</span> isLoading;
+}
+
+<span class="k">class</span> <span class="t">AuthController</span> <span class="k">extends</span> <span class="t">Notifier</span>&lt;<span class="t">AuthState</span>&gt; {
+  <span class="t">Future</span>&lt;<span class="t">void</span>&gt; checkSession();
+  <span class="t">Future</span>&lt;<span class="t">void</span>&gt; login({cpf, senha});
+  <span class="t">Future</span>&lt;<span class="t">void</span>&gt; logout();
+}</pre>
+      </section>
+
+      <!-- ====================== ROUTER ====================== -->
+      <section id="router">
+        <h2>Router</h2>
+        <p class="desc">go_router com <strong>auth guard</strong> via <code>refreshListenable</code> + 3 estilos de transição.</p>
+
+        <h3>Estilos de transição</h3>
+        <table>
+          <thead><tr><th>Helper</th><th>Animação</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><code>_page()</code></td><td>Fade + slide horizontal 6% (280ms)</td><td>Navegação padrão</td></tr>
+            <tr><td><code>_modalPage()</code></td><td>Slide vertical 8% (300ms)</td><td>Trocar senha, TFD solicitar, Falar UBS</td></tr>
+            <tr><td><code>_fadePage()</code></td><td>Fade puro (220ms)</td><td>Splash, login, abas do shell</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Tabela completa de rotas (24)</h3>
+        <table>
+          <thead><tr><th>Rota</th><th>Tela</th><th>Transição</th></tr></thead>
+          <tbody>
+            <tr><td><code>/</code></td><td>Splash</td><td>fade</td></tr>
+            <tr><td><code>/login</code></td><td>Login</td><td>fade</td></tr>
+            <tr><td><code>/esqueci-senha</code></td><td>Esqueci senha</td><td>page</td></tr>
+            <tr><td><code>/onboarding</code></td><td>Onboarding (3 slides)</td><td>fade</td></tr>
+            <tr><td><code>/home</code></td><td>Home</td><td>fade (no shell)</td></tr>
+            <tr><td><code>/dossie</code></td><td>Dossiê visão geral</td><td>fade</td></tr>
+            <tr><td><code>/notificacoes</code></td><td>Inbox</td><td>fade</td></tr>
+            <tr><td><code>/perfil</code></td><td>Perfil</td><td>fade</td></tr>
+            <tr><td><code>/encaminhamentos</code></td><td>Lista de encaminhamentos</td><td>page</td></tr>
+            <tr><td><code>/encaminhamento/:id</code></td><td>Detalhe</td><td>page</td></tr>
+            <tr><td><code>/encaminhamento/:id/timeline</code></td><td>Linha do tempo</td><td>page</td></tr>
+            <tr><td><code>/encaminhamento/:id/anexos</code></td><td>Documentos</td><td>page</td></tr>
+            <tr><td><code>/dossie/atendimentos</code></td><td>Atendimentos</td><td>page</td></tr>
+            <tr><td><code>/dossie/vacinacoes</code></td><td>Carteira de vacinação</td><td>page</td></tr>
+            <tr><td><code>/dossie/exames</code></td><td>Exames</td><td>page</td></tr>
+            <tr><td><code>/tfd</code></td><td>Lista TFD</td><td>page</td></tr>
+            <tr><td><code>/tfd/solicitar/:viagemId</code></td><td>Solicitar vaga</td><td>modal</td></tr>
+            <tr><td><code>/tfd/solicitacao/:id</code></td><td>Detalhe da solicitação</td><td>page</td></tr>
+            <tr><td><code>/ubs</code></td><td>Minha UBS</td><td>page</td></tr>
+            <tr><td><code>/ubs/falar</code></td><td>Falar com UBS</td><td>modal</td></tr>
+            <tr><td><code>/banner/:id</code></td><td>Detalhe do banner</td><td>page</td></tr>
+            <tr><td><code>/perfil/trocar-senha</code></td><td>Trocar senha</td><td>modal</td></tr>
+            <tr><td><code>/perfil/notificacoes</code></td><td>Preferências</td><td>page</td></tr>
+            <tr><td><code>/perfil/ajuda</code></td><td>FAQ</td><td>page</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Auth guard</h3>
+<pre>redirect: (context, state) {
+  <span class="k">final</span> auth = ref.read(authControllerProvider);
+  <span class="k">final</span> location = state.matchedLocation;
+  <span class="k">final</span> isAuthRoute = location.startsWith(<span class="s">'/login'</span>) ||
+                       location.startsWith(<span class="s">'/esqueci-senha'</span>);
+
+  <span class="k">if</span> (auth.status == <span class="t">AuthStatus</span>.checking) {
+    <span class="k">return</span> location == <span class="s">'/'</span> ? <span class="k">null</span> : <span class="s">'/'</span>;
+  }
+  <span class="k">if</span> (!auth.isAuthenticated) {
+    <span class="k">return</span> isAuthRoute || location == <span class="s">'/login'</span> ? <span class="k">null</span> : <span class="s">'/login'</span>;
+  }
+  <span class="k">if</span> (isAuthRoute || location == <span class="s">'/'</span>) <span class="k">return</span> <span class="s">'/home'</span>;
+  <span class="k">return</span> <span class="k">null</span>;
+}</pre>
+      </section>
+
+      <!-- ====================== PUSH ====================== -->
+      <section id="push">
+        <h2>Push Notifications</h2>
+        <p class="desc">FCM v1 (Firebase Messaging) + flutter_local_notifications. Init defensivo — funciona sem <code>google-services.json</code>.</p>
+
+        <div class="screen-card">
+          <div class="file-ref">core/services/push_service.dart</div>
+          <h4 class="title">Fluxo de inicialização</h4>
+          <div class="flow">
+            <div class="step"><div class="n">1</div><div>App boota → <code>PushService.instance.init()</code></div></div>
+            <div class="step"><div class="n">2</div><div>Inicializa <code>flutter_local_notifications</code> sempre (não depende de Firebase)</div></div>
+            <div class="step"><div class="n">3</div><div>Tenta <code>Firebase.initializeApp()</code> — se falhar (sem GoogleService config), apenas loga e segue</div></div>
+            <div class="step"><div class="n">4</div><div>Se FCM ok: requestPermission, registra <code>onBackgroundMessage</code>, pega token inicial</div></div>
+            <div class="step"><div class="n">5</div><div>Foreground messages → re-emite via local notification (pra aparecer no system tray)</div></div>
+            <div class="step"><div class="n">6</div><div>Tap em notif → emite no <code>onDeepLink</code> stream → router escuta e faz <code>push(link)</code></div></div>
+          </div>
+
+          <h4 class="title">Payload FCM esperado</h4>
+<pre>{
+  <span class="s">"notification"</span>: {
+    <span class="s">"title"</span>: <span class="s">"Sua consulta foi marcada!"</span>,
+    <span class="s">"body"</span>: <span class="s">"Cardiologia · 08/06 · 09:30"</span>
+  },
+  <span class="s">"data"</span>: {
+    <span class="s">"tipo"</span>: <span class="s">"ENCAMINHAMENTO"</span>,
+    <span class="s">"deepLink"</span>: <span class="s">"/encaminhamento/enc-100137"</span>,
+    <span class="s">"notificacaoId"</span>: <span class="s">"nt-1"</span>
+  },
+  <span class="s">"android"</span>: { <span class="s">"priority"</span>: <span class="s">"high"</span>, <span class="s">"notification"</span>: { <span class="s">"channel_id"</span>: <span class="s">"unisism_paciente_default"</span> } },
+  <span class="s">"apns"</span>: { <span class="s">"headers"</span>: { <span class="s">"apns-priority"</span>: <span class="s">"10"</span> } }
+}</pre>
+        </div>
+      </section>
+
+      <!-- ====================== API CONVENÇÕES ====================== -->
+      <section id="api-conv">
+        <h2>Backend — Convenções</h2>
+        <p class="desc">Resumo do contrato em <span class="path">BACKEND_API_PACIENTE.md</span>. 580 linhas no md, com todos os endpoints + payloads.</p>
+
+        <h3>Auth header</h3>
+        <p><code>Authorization: Bearer &lt;accessToken&gt;</code> em todas as rotas autenticadas. Access token JWT (<code>exp</code> sugerido 1h). Refresh token rotativo (30d). Em 401: o app limpa tokens e redireciona pra <code>/login</code>.</p>
+
+        <h3>Headers extras enviados pelo app</h3>
+        <ul>
+          <li><code>X-Client-Platform: flutter-mobile</code></li>
+          <li><code>X-Client-Version: 0.1.0</code></li>
+        </ul>
+
+        <h3>Formato de erro</h3>
+<pre>{
+  <span class="s">"code"</span>: <span class="s">"AUTH_INVALID_CREDENTIALS"</span>,
+  <span class="s">"message"</span>: <span class="s">"CPF ou senha inválidos."</span>,
+  <span class="s">"details"</span>: { ... }
+}</pre>
+
+        <table>
+          <thead><tr><th>HTTP</th><th>Code sugerido</th><th>Tratamento no app</th></tr></thead>
+          <tbody>
+            <tr><td>400</td><td>VALIDATION_ERROR</td><td>Mensagem inline</td></tr>
+            <tr><td>401</td><td>AUTH_INVALID_CREDENTIALS / TOKEN_EXPIRED</td><td>Limpa tokens + redirect</td></tr>
+            <tr><td>403</td><td>FORBIDDEN_RESOURCE</td><td>"Você não tem permissão"</td></tr>
+            <tr><td>404</td><td>NOT_FOUND</td><td>"Não encontramos o que procurou"</td></tr>
+            <tr><td>409</td><td>CONFLICT / CONFLICT_NO_SEATS</td><td>"Esta ação entra em conflito"</td></tr>
+            <tr><td>422</td><td>VALIDATION_ERROR</td><td>—</td></tr>
+            <tr><td>429</td><td>RATE_LIMIT</td><td>"Muitas tentativas"</td></tr>
+            <tr><td>5xx</td><td>INTERNAL_ERROR</td><td>"Servidor com problemas"</td></tr>
+            <tr><td>0</td><td>NETWORK_OFFLINE</td><td>"Sem conexão"</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Row-level security</h3>
+        <div class="info-block crit">
+          <div class="t">Regra dura</div>
+          O paciente só pode acessar recursos vinculados ao <strong>seu próprio</strong> pacienteId (extraído do JWT). Nunca confiar em parâmetro de URL — sempre validar no backend.
+        </div>
+      </section>
+
+      <!-- ====================== API ENDPOINTS ====================== -->
+      <section id="api-endpoints">
+        <h2>Backend — Endpoints</h2>
+
+        <h3>1. Auth (7 endpoints)</h3>
+        <table>
+          <thead><tr><th>Método</th><th>Path</th><th>Body / Retorno</th></tr></thead>
+          <tbody>
+            <tr><td>POST</td><td><code>/auth/paciente/login</code></td><td><code>{cpf,senha}</code> → Sessao</td></tr>
+            <tr><td>POST</td><td><code>/auth/paciente/refresh</code></td><td><code>{refreshToken}</code> → Sessao</td></tr>
+            <tr><td>POST</td><td><code>/auth/paciente/logout</code></td><td>→ 204</td></tr>
+            <tr><td>GET</td><td><code>/auth/paciente/me</code></td><td>→ Paciente</td></tr>
+            <tr><td>POST</td><td><code>/auth/paciente/esqueci-senha</code></td><td><code>{cpf}</code> → 204</td></tr>
+            <tr><td>POST</td><td><code>/auth/paciente/redefinir-senha</code></td><td><code>{token,novaSenha}</code> → 204</td></tr>
+            <tr><td>POST</td><td><code>/auth/paciente/registrar-dispositivo</code></td><td><code>{fcmToken,plataforma}</code> → 204</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2. Encaminhamentos (6 endpoints)</h3>
+        <table>
+          <tbody>
+            <tr><td>GET</td><td><code>/paciente/encaminhamentos</code></td><td>Encaminhamento[]</td></tr>
+            <tr><td>GET</td><td><code>/paciente/encaminhamentos/ativo</code></td><td>Encaminhamento | null</td></tr>
+            <tr><td>GET</td><td><code>/paciente/encaminhamentos/:id</code></td><td>Encaminhamento</td></tr>
+            <tr><td>GET</td><td><code>/paciente/encaminhamentos/:id/anexos</code></td><td>Anexo[]</td></tr>
+            <tr><td>GET</td><td><code>/paciente/encaminhamentos/:id/anexos/:anexoId/download</code></td><td>binary (PDF/img) com auth</td></tr>
+            <tr><td>GET</td><td><code>/paciente/encaminhamentos/:id/timeline</code></td><td>EventoTimeline[]</td></tr>
+          </tbody>
+        </table>
+
+        <h3>3. Dossiê (4 endpoints)</h3>
+        <table>
+          <tbody>
+            <tr><td>GET</td><td><code>/paciente/dossie/resumo</code></td><td>DossieResumo</td></tr>
+            <tr><td>GET</td><td><code>/paciente/dossie/atendimentos</code></td><td>Atendimento[]</td></tr>
+            <tr><td>GET</td><td><code>/paciente/dossie/vacinacoes</code></td><td>Vacinacao[]</td></tr>
+            <tr><td>GET</td><td><code>/paciente/dossie/exames</code></td><td>Exame[]</td></tr>
+          </tbody>
+        </table>
+
+        <h3>4. TFD (6 endpoints)</h3>
+        <table>
+          <tbody>
+            <tr><td>GET</td><td><code>/paciente/tfd/viagens</code></td><td>TfdViagem[] futuras</td></tr>
+            <tr><td>GET</td><td><code>/paciente/tfd/viagens/:id</code></td><td>TfdViagem</td></tr>
+            <tr><td>GET</td><td><code>/paciente/tfd/solicitacoes</code></td><td>TfdSolicitacao[] (do paciente)</td></tr>
+            <tr><td>GET</td><td><code>/paciente/tfd/solicitacoes/:id</code></td><td>TfdSolicitacao</td></tr>
+            <tr><td>POST</td><td><code>/paciente/tfd/solicitacoes</code></td><td><code>{viagemId,encaminhamentoId?,justificativa,acompanhante?}</code> → TfdSolicitacao (status=AGUARDANDO, prioridade derivada)</td></tr>
+            <tr><td>DELETE</td><td><code>/paciente/tfd/solicitacoes/:id</code></td><td>204 (só se AGUARDANDO)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>5. Banners (2 endpoints)</h3>
+        <table>
+          <tbody>
+            <tr><td>GET</td><td><code>/paciente/banners</code></td><td>SmsBannerModel[] não-expirados</td></tr>
+            <tr><td>POST</td><td><code>/paciente/banners/:id/visto</code></td><td>204 (telemetria)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>6. Notificações (4 endpoints)</h3>
+        <table>
+          <tbody>
+            <tr><td>GET</td><td><code>/paciente/notificacoes</code></td><td>Notificacao[] ordenada desc</td></tr>
+            <tr><td>GET</td><td><code>/paciente/notificacoes/contagem-nao-lidas</code></td><td><code>{count: number}</code></td></tr>
+            <tr><td>POST</td><td><code>/paciente/notificacoes/:id/marcar-lida</code></td><td>204</td></tr>
+            <tr><td>POST</td><td><code>/paciente/notificacoes/marcar-todas-lidas</code></td><td>204</td></tr>
+          </tbody>
+        </table>
+
+        <h3>7. UBS (1 endpoint)</h3>
+        <table>
+          <tbody>
+            <tr><td>GET</td><td><code>/paciente/ubs/minha</code></td><td>Ubs</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ====================== API ENUMS ====================== -->
+      <section id="api-enums">
+        <h2>Enums canônicos compartilhados</h2>
+        <div class="info-block warn">
+          <div class="t">Importante</div>
+          Esses enums são <strong>compartilhados</strong> entre as 3 Faces (UBS, SMS, Paciente). Renomeá-los exige migração coordenada nos 3 clients.
+        </div>
+
+        <h3>EncaminhamentoStatus</h3>
+        <div class="status-strip">
+          <span class="s s-neut">RASCUNHO</span>
+          <span class="s s-warn">AGUARDANDO_REGULACAO</span>
+          <span class="s s-warn">PENDENCIA_DOCUMENTO</span>
+          <span class="s s-info">EM_ANALISE</span>
+          <span class="s s-info">AGUARDANDO_AGENDAMENTO</span>
+          <span class="s s-ok">AGENDADO</span>
+          <span class="s s-ok">APROVADO</span>
+          <span class="s s-crit">REJEITADO</span>
+          <span class="s s-crit">CANCELADO</span>
+          <span class="s s-neut">CONCLUIDO</span>
+        </div>
+
+        <h3>Prioridade (clínica)</h3>
+        <div class="status-strip">
+          <span class="s s-neut">ELETIVA</span>
+          <span class="s s-warn">PRIORITARIA</span>
+          <span class="s s-crit">URGENTE</span>
+          <span class="s s-crit">EMERGENCIA</span>
+        </div>
+
+        <h3>EventoTimelineTipo</h3>
+        <div class="status-strip">
+          <span class="s s-info">CRIACAO</span>
+          <span class="s s-neut">ANEXO</span>
+          <span class="s s-warn">PENDENCIA</span>
+          <span class="s s-ok">APROVACAO</span>
+          <span class="s s-ok">AGENDAMENTO</span>
+          <span class="s s-crit">REJEICAO</span>
+          <span class="s s-info">ATUALIZACAO</span>
+        </div>
+
+        <h3>AtendimentoTipo</h3>
+        <div class="status-strip">
+          <span class="s s-info">CONSULTA</span>
+          <span class="s s-crit">EMERGENCIA</span>
+          <span class="s s-warn">EXAME</span>
+          <span class="s s-ok">VACINACAO</span>
+          <span class="s s-neut">RETORNO</span>
+        </div>
+
+        <h3>TfdSolicitacaoStatus + Prioridade</h3>
+        <div class="status-strip">
+          <span class="s s-warn">AGUARDANDO</span>
+          <span class="s s-ok">APROVADA</span>
+          <span class="s s-crit">RECUSADA</span>
+          <span class="s s-neut">CANCELADA</span>
+          <span class="s s-info">EMBARCADA</span>
+          <span class="s s-neut">CONCLUIDA</span>
+        </div>
+        <div class="status-strip">
+          <span class="s s-neut">NORMAL</span>
+          <span class="s s-warn">PRIORITARIA</span>
+          <span class="s s-crit">URGENTE</span>
+        </div>
+
+        <h3>BannerTone</h3>
+        <div class="status-strip">
+          <span class="s s-crit">URGENTE</span>
+          <span class="s s-ok">CAMPANHA</span>
+          <span class="s s-info">INFO</span>
+          <span class="s s-warn">ATENCAO</span>
+        </div>
+
+        <h3>NotificacaoTipo + Tone</h3>
+        <div class="status-strip">
+          <span class="s s-info">ENCAMINHAMENTO</span>
+          <span class="s s-ok">TFD</span>
+          <span class="s s-warn">CAMPANHA</span>
+          <span class="s s-crit">ALERTA</span>
+          <span class="s s-neut">SISTEMA</span>
+        </div>
+        <div class="status-strip">
+          <span class="s s-info">INFO</span>
+          <span class="s s-ok">SUCCESS</span>
+          <span class="s s-warn">WARNING</span>
+          <span class="s s-crit">CRITICAL</span>
+        </div>
+      </section>
+
+      <!-- ====================== COMO RODAR ====================== -->
+      <section id="rodar">
+        <h2>Como rodar</h2>
+        <h3>Setup</h3>
+<pre>cd &lt;repo-root&gt;/UNISISM-Paciente
+flutter pub get
+flutter run    <span class="c"># mock-mode, login com senha "senha123"</span></pre>
+
+        <h3>Contra backend real (quando estiver pronto)</h3>
+<pre>flutter run \
+  --dart-define=USE_MOCK=false \
+  --dart-define=API_BASE_URL=https://api.unisism.muni.gov.br/v1</pre>
+
+        <h3>Push notifications (opcional)</h3>
+        <p>Pra ativar FCM remoto, adicionar:</p>
+        <ul>
+          <li>Android: <span class="path">android/app/google-services.json</span> + plugin Gradle</li>
+          <li>iOS: <span class="path">ios/Runner/GoogleService-Info.plist</span> + APNs cert no Firebase Console</li>
+        </ul>
+        <p>Sem isso o app <strong>roda normalmente</strong> — só o push remoto desabilita (local notifications continuam).</p>
+
+        <h3>Comandos úteis</h3>
+        <table>
+          <tbody>
+            <tr><td><code>flutter analyze</code></td><td>Lint + type check (zero erros esperado)</td></tr>
+            <tr><td><code>flutter test</code></td><td>Smoke tests (3 testes)</td></tr>
+            <tr><td><code>flutter build apk --release</code></td><td>APK release</td></tr>
+            <tr><td><code>flutter build ios --release</code></td><td>iOS release (precisa Mac + Xcode)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Modo mock</h3>
+        <p><code>AppConstants.useMockData</code> default <code>true</code> via <code>--dart-define=USE_MOCK</code>. Repositórios switcham entre <code>*RepositoryMock</code> (in-memory) e <code>*RepositoryHttp</code> (Dio real) baseado nessa flag.</p>
+      </section>
+
+      <!-- ====================== ERROS CONHECIDOS ====================== -->
+      <section id="bugs">
+        <h2>Erros conhecidos e como foram resolvidos</h2>
+
+        <h3>1. <code>!semantics.parentDataDirty</code> em loop</h3>
+        <p><strong>Causa raiz combinada:</strong></p>
+        <ol>
+          <li><strong>MediaQuery wrapper global</strong> no <code>MaterialApp.router builder</code> com <code>textScaler.clamp</code> — invalidava parent data a cada navegação. <span class="pill green">Removido.</span></li>
+          <li><strong>Hero + Material wrapper</strong> ao redor de <code>SmsBanner</code> (que internamente tinha CachedNetworkImage + AspectRatio + Column complexa) na home + <code>AnimatedSwitcher</code> trocando entre tipos drasticamente diferentes (PageView ↔ Skeleton ↔ EmptyView). <span class="pill green">Hero/Material wrappers removidos.</span></li>
+          <li><strong>Positioned com offset negativo</strong> + <code>Stack(clipBehavior: Clip.none)</code> + <code>TweenAnimationBuilder</code> no badge da bottom nav. <span class="pill green">Substituído por <code>SizedBox</code> + <code>Align(Alignment(1.4, -1.2))</code>.</span></li>
+          <li><strong>CustomScrollView + Slivers</strong> dentro de <code>RefreshIndicator</code> em atendimentos. <span class="pill green">Substituído por ListView simples.</span></li>
+          <li><strong>AnimatedSwitcher entre tabs</strong> no MainShell quando o conteúdo tinha PageView dentro. <span class="pill green">Removido — go_router já anima transições.</span></li>
+          <li><strong>AnimatedSize + AnimatedSwitcher + SizeTransition</strong> aninhados em TFD solicitar. <span class="pill green">Simplificado pra <code>if (...)</code> direto.</span></li>
+        </ol>
+
+        <h3>2. <code>ref.listen can only be used within the build method</code></h3>
+        <p><code>_wire()</code> era chamado via <code>addPostFrameCallback</code> (fora do build) usando <code>ref.listen</code>. <span class="pill green">Trocado pra <code>ref.listenManual</code></span> — variante explícita pra usar fora do build.</p>
+
+        <h3>3. <code>SingleTickerProviderStateMixin but multiple tickers were created</code></h3>
+        <p><code>_RoadmapNodeState</code> tinha 2 AnimationControllers (<code>_entry</code> e <code>_pulse</code> condicional) mas o mixin singular só permite 1. <span class="pill green">Trocado pra <code>TickerProviderStateMixin</code> (plural).</span></p>
+
+        <h3>4. Telas em branco com providers travando</h3>
+        <p>Em ambiente onde providers Riverpod entravam em loop ou ficavam pendentes infinitamente, a tela aparecia em branco. <span class="pill green">As 4 telas de encaminhamento foram refeitas como <code>StatelessWidget</code> puro com dados hard-coded</span> — sem provider, sem async, sem ref.watch. Detalhe, timeline, anexos e lista renderizam sempre, em qualquer condição.</p>
+      </section>
+
+      <!-- ====================== PRÓXIMOS PASSOS ====================== -->
+      <section id="proximos">
+        <h2>Próximos passos</h2>
+        <h3>Curto prazo</h3>
+        <ul>
+          <li>Backend implementar contrato em <span class="path">BACKEND_API_PACIENTE.md</span> — fase 1 é login + me + 1 endpoint de encaminhamento ativo</li>
+          <li>Adicionar <code>google-services.json</code> + <code>GoogleService-Info.plist</code> pra ativar push remoto</li>
+          <li>Testes E2E com Patrol ou integration_test</li>
+        </ul>
+
+        <h3>Médio prazo</h3>
+        <ul>
+          <li>Onboarding com autocadastro (paciente sem conta cadastra-se via gov.br / CPF + SUS)</li>
+          <li>Modo offline-first com Drift/Isar (cache local de dossiê pra UBS rural)</li>
+          <li>Lembretes de medicação (notificações locais agendadas)</li>
+          <li>Pedido de 2ª via de receita pela UBS</li>
+          <li>Modo escuro (paleta já preparada via tokens)</li>
+        </ul>
+
+        <h3>Acessibilidade</h3>
+        <ul>
+          <li>Pass completo de <code>Semantics</code> nos widgets do DS</li>
+          <li>Testes com TalkBack/VoiceOver</li>
+          <li>Tamanho de texto dinâmico (respeitar settings do usuário)</li>
+          <li>Modo de leitura por áudio (público analfabeto funcional)</li>
+        </ul>
+      </section>
+
+      <hr>
+      <footer>
+        <p style="text-align:center;color:var(--slate-500);font-size:13px;margin:48px 0 16px;font-family:var(--mono);letter-spacing:0.5px;">
+          UNISISM PACIENTE · v0.1.0 · BUILD 2026.05 · DOCS GERADAS EM 2026-05-27
+        </p>
+      </footer>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  // Active link highlight no sidebar
+  const links = document.querySelectorAll('.sidebar nav a[href^="#"]');
+  const sections = document.querySelectorAll('section[id]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        links.forEach(l => {
+          if (l.getAttribute('href') === `#${id}`) {
+            l.style.background = 'var(--blue-50)';
+            l.style.borderLeftColor = 'var(--blue-900)';
+            l.style.color = 'var(--blue-900)';
+            l.style.fontWeight = '700';
+          } else {
+            l.style.background = '';
+            l.style.borderLeftColor = '';
+            l.style.color = '';
+            l.style.fontWeight = '';
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

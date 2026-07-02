@@ -18,8 +18,17 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  // Status bar discreta — combina com o design B2G claro.
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
+    statusBarColor: Colors.transparent,
+    systemNavigationBarColor: Colors.white,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
 
-  await PushService.instance.init();
+  // Push (ntfy.sh) — falha silenciosa: app continua funcionando sem push.
+  try {
+    await PushService.instance.init();
+  } catch (_) {/* nice-to-have */}
 
   runApp(const ProviderScope(child: UnisismApp()));
 }
@@ -32,6 +41,8 @@ class UnisismApp extends ConsumerStatefulWidget {
 }
 
 class _UnisismAppState extends ConsumerState<UnisismApp> {
+  bool _wired = false;
+
   @override
   void initState() {
     super.initState();
@@ -39,29 +50,50 @@ class _UnisismAppState extends ConsumerState<UnisismApp> {
   }
 
   void _wire() {
+    if (_wired) return;
+    _wired = true;
+
+    // ─── 1. 401 fatal → força logout (limpa estado UI) ──
     ref.read(apiClientProvider).onUnauthorized = () {
+      ref.read(refreshSchedulerProvider).cancel();
       ref.read(authControllerProvider.notifier).logout();
     };
 
-    // listenManual: ref.listen() exige estar dentro do build() — aqui estamos
-    // num callback postFrame, então usamos a variante manual.
+    // ─── 2. Login/Refresh → registra push + agenda refresh proativo ──
+    // ─── Logout → cancela timer ──
     ref.listenManual<AuthState>(authControllerProvider, (prev, next) async {
+      final logou = (prev?.status == AuthStatus.authenticated) &&
+          next.status == AuthStatus.unauthenticated;
+      if (logou) {
+        ref.read(refreshSchedulerProvider).cancel();
+        return;
+      }
+
       if (next.status == AuthStatus.authenticated && next.paciente != null) {
+        // Registra push token no backend (best-effort).
         final fcm = PushService.instance.fcmToken;
-        if (fcm == null) return;
-        try {
-          await ref.read(authRepositoryProvider).registrarDispositivo(
-                fcmToken: fcm,
-                plataforma: defaultTargetPlatform.name,
-              );
-        } catch (_) {/* não crítico */}
+        if (fcm != null) {
+          try {
+            await ref.read(authRepositoryProvider).registrarDispositivo(
+                  fcmToken: fcm,
+                  plataforma: defaultTargetPlatform.name,
+                );
+          } catch (_) {/* não crítico */}
+        }
+
+        // Agenda refresh proativo (5 min antes do access expirar).
+        // Sessões antigas sem `expiresAt` no model pulam — fallback reativo.
+        await _agendarRefreshProativo();
       }
     });
 
+    // ─── 3. Deep link de notificação → navegação ──
     final router = ref.read(routerProvider);
     PushService.instance.onDeepLink.listen((link) {
       router.push(link);
     });
+
+    // ─── 4. Topic UUID gerado/renovado → registra no backend ──
     PushService.instance.onTokenRefresh = (token) async {
       if (ref.read(authControllerProvider).isAuthenticated) {
         try {
@@ -72,6 +104,24 @@ class _UnisismAppState extends ConsumerState<UnisismApp> {
         } catch (_) {/* não crítico */}
       }
     };
+  }
+
+  /// Agenda o refresh proativo. Usa `expiresIn` padrão (30 min) quando o
+  /// estado não tiver `expiresAt` específico — auth_controller só guarda
+  /// o `Paciente`, não a `Sessao` completa.
+  Future<void> _agendarRefreshProativo() async {
+    final api = ref.read(apiClientProvider);
+    final hasRefresh = await api.getRefreshToken();
+    if (hasRefresh == null || hasRefresh.isEmpty) return;
+    // Default 30min — bate com `expiresIn: 1800` do backend v0.18+.
+    final expiresAt = DateTime.now().add(const Duration(minutes: 30));
+    ref.read(refreshSchedulerProvider).schedule(expiresAt: expiresAt);
+  }
+
+  @override
+  void dispose() {
+    PushService.instance.dispose();
+    super.dispose();
   }
 
   @override

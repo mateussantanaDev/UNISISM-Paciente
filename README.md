@@ -3,7 +3,7 @@
 App Flutter do **paciente** do ecossistema UNISISM — terceira Face (cidadão) do sistema. Acompanhamento de encaminhamentos médicos, dossiê de saúde, solicitação de vaga no TFD, banners da Secretaria e notificações push.
 
 > Faces relacionadas: UBS (Svelte) em `../unisism-ubs/frontend` · SMS/Regulação (Svelte, planejada) · Backend Node/TS compartilhado em `../unisism-ubs/backend`.
-
+   53474131826
 ---
 
 ## 1. Requisitos

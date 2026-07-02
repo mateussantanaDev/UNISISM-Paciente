@@ -1,6 +1,5 @@
 import '../api/api_client.dart';
 import '../models/tfd.dart';
-import 'mock/mock_seed.dart';
 
 /// TFD — Tratamento Fora de Domicílio. Contrato:
 ///
@@ -32,25 +31,25 @@ class TfdRepositoryHttp implements TfdRepository {
 
   @override
   Future<List<TfdViagem>> listarViagens() async {
-    final r = await api.get<List>('/paciente/tfd/viagens');
+    final r = await api.get<List>('/paciente-app/tfd/viagens');
     return r.cast<Map<String, dynamic>>().map(TfdViagem.fromJson).toList();
   }
 
   @override
   Future<TfdViagem> obterViagem(String id) async {
-    final r = await api.get<Map<String, dynamic>>('/paciente/tfd/viagens/$id');
+    final r = await api.get<Map<String, dynamic>>('/paciente-app/tfd/viagens/$id');
     return TfdViagem.fromJson(r);
   }
 
   @override
   Future<List<TfdSolicitacao>> minhasSolicitacoes() async {
-    final r = await api.get<List>('/paciente/tfd/solicitacoes');
+    final r = await api.get<List>('/paciente-app/tfd/solicitacoes');
     return r.cast<Map<String, dynamic>>().map(TfdSolicitacao.fromJson).toList();
   }
 
   @override
   Future<TfdSolicitacao> obterSolicitacao(String id) async {
-    final r = await api.get<Map<String, dynamic>>('/paciente/tfd/solicitacoes/$id');
+    final r = await api.get<Map<String, dynamic>>('/paciente-app/tfd/solicitacoes/$id');
     return TfdSolicitacao.fromJson(r);
   }
 
@@ -62,7 +61,7 @@ class TfdRepositoryHttp implements TfdRepository {
     String? acompanhante,
   }) async {
     final r = await api.post<Map<String, dynamic>>(
-      '/paciente/tfd/solicitacoes',
+      '/paciente-app/tfd/solicitacoes',
       body: {
         'viagemId': viagemId,
         if (encaminhamentoId != null) 'encaminhamentoId': encaminhamentoId,
@@ -75,64 +74,7 @@ class TfdRepositoryHttp implements TfdRepository {
 
   @override
   Future<void> cancelar(String id) async {
-    await api.delete('/paciente/tfd/solicitacoes/$id');
+    await api.delete('/paciente-app/tfd/solicitacoes/$id');
   }
 }
 
-class TfdRepositoryMock implements TfdRepository {
-  final _solicitacoes = [...MockSeed.tfdSolicitacoes];
-
-  @override
-  Future<List<TfdViagem>> listarViagens() async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    return MockSeed.tfdViagens;
-  }
-
-  @override
-  Future<TfdViagem> obterViagem(String id) async {
-    await Future.delayed(const Duration(milliseconds: 250));
-    return MockSeed.tfdViagens.firstWhere((v) => v.id == id);
-  }
-
-  @override
-  Future<List<TfdSolicitacao>> minhasSolicitacoes() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _solicitacoes;
-  }
-
-  @override
-  Future<TfdSolicitacao> obterSolicitacao(String id) async {
-    await Future.delayed(const Duration(milliseconds: 250));
-    return _solicitacoes.firstWhere((s) => s.id == id);
-  }
-
-  @override
-  Future<TfdSolicitacao> solicitar({
-    required String viagemId,
-    String? encaminhamentoId,
-    required String justificativa,
-    String? acompanhante,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 700));
-    final viagem = MockSeed.tfdViagens.firstWhere((v) => v.id == viagemId);
-    final nova = TfdSolicitacao(
-      id: 'sol-${DateTime.now().millisecondsSinceEpoch}',
-      viagemId: viagemId,
-      status: 'AGUARDANDO',
-      criadaEm: DateTime.now(),
-      viagem: viagem,
-      prioridade: encaminhamentoId != null ? 'PRIORITARIA' : 'NORMAL',
-      justificativaPaciente: justificativa,
-      encaminhamentoProtocolo: encaminhamentoId,
-      acompanhante: acompanhante,
-    );
-    _solicitacoes.insert(0, nova);
-    return nova;
-  }
-
-  @override
-  Future<void> cancelar(String id) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    _solicitacoes.removeWhere((s) => s.id == id);
-  }
-}

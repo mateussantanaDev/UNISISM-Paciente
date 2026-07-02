@@ -7,10 +7,15 @@ import '../../core/errors/api_exception.dart';
 
 /// Cliente HTTP central. Singleton.
 ///
-/// Padrão herdado da Face UBS:
+/// Funcionalidades:
 /// - Interceptor de auth injeta `Authorization: Bearer <token>`
-/// - Em 401, dispara `onUnauthorized` (callback global) — o app redireciona pra login
-/// - Mapeia erros do backend `{ code, message, details }` para `ApiException`
+/// - **Refresh rotativo single-flight** em 401 (v0.18.0+):
+///   - Em 401, tenta `POST /paciente-app/auth/refresh` UMA vez
+///   - Sucesso → reexecuta a request original transparentemente
+///   - Falha (REUSE_DETECTED/EXPIRADO/REVOGADO) → limpa tokens + `onUnauthorized`
+///   - Single-flight: múltiplas requests 401 simultâneas esperam o **mesmo**
+///     refresh promise; evita corrida e múltiplas chamadas ao backend.
+/// - Mapeia erros do backend `{ error: { code, message, details } }` para `ApiException`
 class ApiClient {
   ApiClient._({required this.dio, required this.storage}) {
     _attachInterceptors();
@@ -37,10 +42,23 @@ class ApiClient {
   final FlutterSecureStorage storage;
   final Logger _log = Logger(printer: PrettyPrinter(methodCount: 0));
 
-  /// Callback global pra 401. App registra na inicialização.
+  /// Callback global pra 401 fatal (refresh esgotado). App registra na boot.
   void Function()? onUnauthorized;
 
-  // --- Tokens ---
+  // ─── Refresh single-flight ───────────────────────────────────────
+  // Quando >1 request bate 401 ao mesmo tempo, todas aguardam UM refresh.
+  Completer<bool>? _refreshing;
+
+  /// Endpoints que NÃO disparam refresh em 401 (auth público / o próprio refresh).
+  static const _authPaths = <String>{
+    '/paciente-app/auth/login',
+    '/paciente-app/auth/refresh',
+    '/paciente-app/auth/esqueci-senha',
+    '/paciente-app/auth/redefinir-senha',
+    '/paciente-app/auth/ativar-conta',
+  };
+
+  // ─── Tokens ──────────────────────────────────────────────────────
 
   Future<String?> getAccessToken() async {
     return storage.read(key: AppConstants.kTokenAccess);
@@ -65,7 +83,7 @@ class ApiClient {
     return t != null && t.isNotEmpty;
   }
 
-  // --- Interceptors ---
+  // ─── Interceptors ────────────────────────────────────────────────
 
   void _attachInterceptors() {
     dio.interceptors.add(InterceptorsWrapper(
@@ -79,7 +97,6 @@ class ApiClient {
       },
       onResponse: (response, handler) {
         _log.d('← ${response.statusCode} ${response.requestOptions.uri}');
-        // Status < 500 é tratado aqui (validateStatus). Lança erro pra >= 400.
         final s = response.statusCode ?? 0;
         if (s >= 400) {
           handler.reject(DioException(
@@ -92,8 +109,38 @@ class ApiClient {
         handler.next(response);
       },
       onError: (e, handler) async {
+        final status = e.response?.statusCode ?? 0;
+        final path = e.requestOptions.path;
+
+        // ── 401 não-fatal → tenta refresh single-flight ──
+        if (status == 401 &&
+            !_isAuthPath(path) &&
+            e.requestOptions.extra['__refresh_retried__'] != true) {
+          final refreshed = await _tryRefresh();
+          if (refreshed) {
+            try {
+              // Re-tenta a request original com novo access token.
+              final retryOptions = e.requestOptions
+                ..extra['__refresh_retried__'] = true;
+              final newToken = await getAccessToken();
+              if (newToken != null && newToken.isNotEmpty) {
+                retryOptions.headers['Authorization'] = 'Bearer $newToken';
+              }
+              final retried = await dio.fetch<dynamic>(retryOptions);
+              return handler.resolve(retried);
+            } catch (retryErr) {
+              // Falhou de novo — segue pro fluxo fatal abaixo.
+              _log.w('Retry pós-refresh falhou: $retryErr');
+            }
+          }
+          // Refresh falhou (REUSE/EXPIRADO/REVOGADO/INVALIDO) — fatal.
+          await clearTokens();
+          onUnauthorized?.call();
+        }
+
         final apiErr = _toApiException(e);
-        if (apiErr.isUnauthorized) {
+        // Fallback fatal pra outros 401 (ex: paths excluídos)
+        if (apiErr.isUnauthorized && !_isAuthPath(path)) {
           await clearTokens();
           onUnauthorized?.call();
         }
@@ -108,22 +155,111 @@ class ApiClient {
     ));
   }
 
+  bool _isAuthPath(String path) {
+    return _authPaths.any((p) => path.endsWith(p) || path.contains(p));
+  }
+
+  /// Tenta refresh. Retorna true se rolou sucesso e o novo access tá salvo.
+  /// Single-flight: chamadas concorrentes aguardam o mesmo Future.
+  Future<bool> _tryRefresh() async {
+    final inflight = _refreshing;
+    if (inflight != null) return inflight.future;
+
+    final completer = Completer<bool>();
+    _refreshing = completer;
+
+    try {
+      final refresh = await getRefreshToken();
+      if (refresh == null || refresh.isEmpty) {
+        completer.complete(false);
+        return false;
+      }
+
+      // Cria Dio "limpo" sem interceptors pra não recursar.
+      final raw = Dio(BaseOptions(
+        baseUrl: dio.options.baseUrl,
+        connectTimeout: dio.options.connectTimeout,
+        receiveTimeout: dio.options.receiveTimeout,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Client-Platform': 'flutter-mobile',
+          'X-Client-Version': AppConstants.appVersion,
+        },
+        validateStatus: (s) => s != null && s < 500,
+      ));
+
+      final r = await raw.post<dynamic>(
+        '/paciente-app/auth/refresh',
+        data: {'refreshToken': refresh},
+      );
+
+      if ((r.statusCode ?? 0) >= 400) {
+        completer.complete(false);
+        return false;
+      }
+
+      final data = r.data;
+      if (data is! Map<String, dynamic>) {
+        completer.complete(false);
+        return false;
+      }
+
+      final newAccess = (data['token'] ?? data['accessToken']) as String?;
+      final newRefresh = (data['refreshToken'] as String?) ?? '';
+      if (newAccess == null || newAccess.isEmpty) {
+        completer.complete(false);
+        return false;
+      }
+
+      await setTokens(access: newAccess, refresh: newRefresh);
+      _log.i('✓ Refresh rotativo concluído');
+      completer.complete(true);
+      return true;
+    } catch (e) {
+      _log.w('Refresh falhou: $e');
+      if (!completer.isCompleted) completer.complete(false);
+      return false;
+    } finally {
+      _refreshing = null;
+    }
+  }
+
   ApiException _toApiException(DioException e) {
     final status = e.response?.statusCode ?? 0;
     final data = e.response?.data;
     if (data is Map<String, dynamic>) {
+      // Backend real usa shape envelopado `{ error: { code, message, details } }`.
+      // Mock/spec ideal usa shape plano `{ code, message, details }`. Suportar ambos.
+      final payload = (data['error'] is Map<String, dynamic>)
+          ? data['error'] as Map<String, dynamic>
+          : data;
       return ApiException(
         status: status,
-        code: data['code']?.toString() ?? 'UNKNOWN',
-        message: data['message']?.toString() ?? _defaultMessage(status),
-        details: (data['details'] as Map<String, dynamic>?) ?? data,
+        code: payload['code']?.toString() ?? _codeForStatus(status),
+        message: payload['message']?.toString() ?? _defaultMessage(status),
+        details: (payload['details'] as Map<String, dynamic>?) ?? payload,
       );
     }
     return ApiException(
       status: status,
-      code: status == 0 ? 'NETWORK_OFFLINE' : 'UNKNOWN',
+      code: status == 0 ? 'NETWORK_OFFLINE' : _codeForStatus(status),
       message: _defaultMessage(status),
     );
+  }
+
+  String _codeForStatus(int status) {
+    return switch (status) {
+      0 => 'NETWORK_OFFLINE',
+      400 || 422 => 'VALIDATION_ERROR',
+      401 => 'TOKEN_INVALIDO',
+      403 => 'FORBIDDEN_RESOURCE',
+      404 => 'NOT_FOUND',
+      409 => 'CONFLICT',
+      429 => 'RATE_LIMIT_EXCEDIDO',
+      >= 500 => 'INTERNAL_ERROR',
+      _ => 'UNKNOWN',
+    };
   }
 
   String _defaultMessage(int status) {
@@ -140,7 +276,7 @@ class ApiClient {
     };
   }
 
-  // --- Helpers HTTP ---
+  // ─── Helpers HTTP ────────────────────────────────────────────────
 
   Future<T> get<T>(String path, {Map<String, dynamic>? query}) async {
     final r = await dio.get(path, queryParameters: query);

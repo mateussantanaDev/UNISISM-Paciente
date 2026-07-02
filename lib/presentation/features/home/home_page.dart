@@ -61,10 +61,14 @@ class HomePage extends ConsumerWidget {
                     );
                   },
                   loading: () => const HeroCardSkeleton(),
-                  error: (e, _) => ErrorView(
-                    title: 'Não conseguimos carregar seus encaminhamentos',
-                    message: 'Verifique sua conexão.',
-                    onRetry: () => ref.invalidate(encaminhamentosAtivosProvider),
+                  // Em telas de lista, qualquer erro vira "nada por aqui" — não
+                  // tira o paciente do app por causa de glitch de rede momentâneo.
+                  // Pull-to-refresh tenta de novo silenciosamente.
+                  error: (e, _) => EmptyView(
+                    icon: Icons.medical_information_outlined,
+                    title: 'Nenhum encaminhamento ativo',
+                    message:
+                        'Quando sua UBS criar um encaminhamento médico, ele aparecerá aqui.',
                   ),
                 ),
               ],

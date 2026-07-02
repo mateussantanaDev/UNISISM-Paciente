@@ -1,4 +1,19 @@
 /// TFD — Tratamento Fora de Domicílio (transporte sanitário compartilhado).
+///
+/// Shape autoritativo: `src/modules/paciente-app/application/use-cases/
+/// TfdPacienteUseCases.ts` (`unisism-ubs@0.18.1+`).
+
+/// Coordenada geográfica `{lat, lng}` — futuro: integração com mapas.
+class GeoCoord {
+  const GeoCoord({required this.lat, required this.lng});
+  final double lat;
+  final double lng;
+
+  factory GeoCoord.fromJson(Map<String, dynamic> j) => GeoCoord(
+        lat: (j['lat'] as num).toDouble(),
+        lng: (j['lng'] as num).toDouble(),
+      );
+}
 
 /// Veículo / viagem programada da SMS.
 class TfdViagem {
@@ -16,6 +31,8 @@ class TfdViagem {
     required this.veiculoPlaca,
     this.observacoes,
     this.motoristaNome,
+    this.coordOrigem,
+    this.coordDestino,
   });
 
   final String id;
@@ -32,24 +49,34 @@ class TfdViagem {
   final String? observacoes;
   final String? motoristaNome;
 
+  /// Reservado — backend retorna `null` hoje.
+  final GeoCoord? coordOrigem;
+  final GeoCoord? coordDestino;
+
   int get vagasDisponiveis => vagasTotal - vagasOcupadas;
   bool get temVaga => vagasDisponiveis > 0;
   double get ocupacaoPct => vagasTotal == 0 ? 0 : vagasOcupadas / vagasTotal;
 
   factory TfdViagem.fromJson(Map<String, dynamic> j) => TfdViagem(
         id: j['id'] as String,
-        destinoCidade: j['destinoCidade'] as String,
-        destinoUf: j['destinoUf'] as String,
-        destinoLocal: j['destinoLocal'] as String,
+        destinoCidade: (j['destinoCidade'] as String?) ?? '',
+        destinoUf: (j['destinoUf'] as String?) ?? '',
+        destinoLocal: (j['destinoLocal'] as String?) ?? '',
         dataPartida: DateTime.parse(j['dataPartida'] as String),
-        horaPartida: j['horaPartida'] as String,
-        localEmbarque: j['localEmbarque'] as String,
-        vagasTotal: (j['vagasTotal'] as num).toInt(),
-        vagasOcupadas: (j['vagasOcupadas'] as num).toInt(),
-        veiculoDescricao: j['veiculoDescricao'] as String,
-        veiculoPlaca: j['veiculoPlaca'] as String,
+        horaPartida: (j['horaPartida'] as String?) ?? '',
+        localEmbarque: (j['localEmbarque'] as String?) ?? '',
+        vagasTotal: (j['vagasTotal'] as num?)?.toInt() ?? 0,
+        vagasOcupadas: (j['vagasOcupadas'] as num?)?.toInt() ?? 0,
+        veiculoDescricao: (j['veiculoDescricao'] as String?) ?? '',
+        veiculoPlaca: (j['veiculoPlaca'] as String?) ?? '',
         observacoes: j['observacoes'] as String?,
         motoristaNome: j['motoristaNome'] as String?,
+        coordOrigem: j['coordOrigem'] == null
+            ? null
+            : GeoCoord.fromJson(j['coordOrigem'] as Map<String, dynamic>),
+        coordDestino: j['coordDestino'] == null
+            ? null
+            : GeoCoord.fromJson(j['coordDestino'] as Map<String, dynamic>),
       );
 }
 
@@ -65,6 +92,7 @@ class TfdSolicitacao {
     this.numeroAssento,
     this.justificativaPaciente,
     this.motivoRecusa,
+    this.encaminhamentoId,
     this.encaminhamentoProtocolo,
     this.aprovadaEm,
     this.acompanhante,
@@ -73,21 +101,27 @@ class TfdSolicitacao {
   final String id;
   final String viagemId;
 
-  /// AGUARDANDO / APROVADA / RECUSADA / CANCELADA / EMBARCADA / CONCLUIDA
+  /// AGUARDANDO | APROVADA | RECUSADA | CANCELADA | EMBARCADA | CONCLUIDA
   final String status;
   final DateTime criadaEm;
   final TfdViagem viagem;
 
-  /// NORMAL / PRIORITARIA / URGENTE
-  /// PRIORITARIA quando o paciente anexa um encaminhamento ativo.
+  /// NORMAL | PRIORITARIA | URGENTE.
+  /// **Derivada pelo servidor** a partir do encaminhamento anexado.
   final String prioridade;
 
   final String? numeroAssento;
   final String? justificativaPaciente;
   final String? motivoRecusa;
+
+  /// ID do encaminhamento que originou a solicitação (quando informado).
+  final String? encaminhamentoId;
   final String? encaminhamentoProtocolo;
   final DateTime? aprovadaEm;
   final String? acompanhante;
+
+  /// True quando esta solicitação ainda pode ser cancelada pelo paciente.
+  bool get cancelavel => status == 'AGUARDANDO';
 
   String get statusLabel {
     switch (status) {
@@ -118,6 +152,7 @@ class TfdSolicitacao {
         numeroAssento: j['numeroAssento'] as String?,
         justificativaPaciente: j['justificativaPaciente'] as String?,
         motivoRecusa: j['motivoRecusa'] as String?,
+        encaminhamentoId: j['encaminhamentoId'] as String?,
         encaminhamentoProtocolo: j['encaminhamentoProtocolo'] as String?,
         aprovadaEm: j['aprovadaEm'] == null
             ? null

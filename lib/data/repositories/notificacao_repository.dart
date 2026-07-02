@@ -1,13 +1,15 @@
 import '../api/api_client.dart';
 import '../models/notificacao.dart';
-import 'mock/mock_seed.dart';
 
-/// Notificações. Contrato:
+/// Notificações.
 ///
-/// GET   /paciente/notificacoes                      → Notificacao[]
-/// GET   /paciente/notificacoes/contagem-nao-lidas   → { count: number }
-/// POST  /paciente/notificacoes/:id/marcar-lida      → 204
-/// POST  /paciente/notificacoes/marcar-todas-lidas   → 204
+/// **Backend real** (`unisism-ubs@0.18.0+`):
+///
+///     GET   /v1/paciente-app/notificacoes          → [{id, tipo, titulo, corpo, criadaEm, lidaEm, ...}]
+///                                                    (query opcional `?apenasNaoLidas=true`)
+///     GET   /v1/paciente-app/notificacoes/count    → { naoLidas: number }
+///     POST  /v1/paciente-app/notificacoes/:id/lida → 204
+///     POST  /v1/paciente-app/notificacoes/marcar-todas-lidas → { atualizadas: number }
 abstract class NotificacaoRepository {
   Future<List<Notificacao>> listar();
   Future<int> contagemNaoLidas();
@@ -21,52 +23,26 @@ class NotificacaoRepositoryHttp implements NotificacaoRepository {
 
   @override
   Future<List<Notificacao>> listar() async {
-    final r = await api.get<List>('/paciente/notificacoes');
+    final r = await api.get<List>('/paciente-app/notificacoes');
     return r.cast<Map<String, dynamic>>().map(Notificacao.fromJson).toList();
   }
 
   @override
   Future<int> contagemNaoLidas() async {
-    final r = await api.get<Map<String, dynamic>>('/paciente/notificacoes/contagem-nao-lidas');
-    return (r['count'] as num).toInt();
+    final r = await api
+        .get<Map<String, dynamic>>('/paciente-app/notificacoes/count');
+    // Backend usa `naoLidas`; aceita `count` como fallback (mock).
+    return ((r['naoLidas'] ?? r['count']) as num?)?.toInt() ?? 0;
   }
 
   @override
   Future<void> marcarLida(String id) async {
-    await api.post('/paciente/notificacoes/$id/marcar-lida');
+    await api.post('/paciente-app/notificacoes/$id/lida');
   }
 
   @override
   Future<void> marcarTodasLidas() async {
-    await api.post('/paciente/notificacoes/marcar-todas-lidas');
+    await api.post('/paciente-app/notificacoes/marcar-todas-lidas');
   }
 }
 
-class NotificacaoRepositoryMock implements NotificacaoRepository {
-  final List<Notificacao> _items = [...MockSeed.notificacoes];
-
-  @override
-  Future<List<Notificacao>> listar() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _items;
-  }
-
-  @override
-  Future<int> contagemNaoLidas() async {
-    await Future.delayed(const Duration(milliseconds: 80));
-    return _items.where((n) => !n.lida).length;
-  }
-
-  @override
-  Future<void> marcarLida(String id) async {
-    final i = _items.indexWhere((n) => n.id == id);
-    if (i >= 0) _items[i] = _items[i].copyWith(lida: true);
-  }
-
-  @override
-  Future<void> marcarTodasLidas() async {
-    for (var i = 0; i < _items.length; i++) {
-      _items[i] = _items[i].copyWith(lida: true);
-    }
-  }
-}

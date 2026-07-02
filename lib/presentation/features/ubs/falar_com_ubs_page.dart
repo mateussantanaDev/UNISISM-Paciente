@@ -25,9 +25,11 @@ class FalarComUbsPage extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(minhaUbsProvider),
+        error: (_, __) => const EmptyView(
+          icon: Icons.phone_disabled_outlined,
+          title: 'Contatos não disponíveis',
+          message:
+              'Procure presencialmente sua UBS — os contatos online ainda não foram cadastrados.',
         ),
         data: (u) => ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -41,18 +43,19 @@ class FalarComUbsPage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xl),
             SectionHeader(label: 'Escolha como falar'),
 
-            _Canal(
-              icon: Icons.call,
-              iconBg: AppColors.emerald700,
-              titulo: 'Ligar agora',
-              descricao: u.telefone,
-              cta: 'Iniciar ligação',
-              onTap: () async {
-                final uri = Uri.parse(
-                    'tel:${u.telefone.replaceAll(RegExp(r"\D"), "")}');
-                if (await canLaunchUrl(uri)) await launchUrl(uri);
-              },
-            ),
+            if (u.telefone != null && u.telefone!.isNotEmpty)
+              _Canal(
+                icon: Icons.call,
+                iconBg: AppColors.emerald700,
+                titulo: 'Ligar agora',
+                descricao: u.telefone!,
+                cta: 'Iniciar ligação',
+                onTap: () async {
+                  final uri = Uri.parse(
+                      'tel:${u.telefone!.replaceAll(RegExp(r"\D"), "")}');
+                  if (await canLaunchUrl(uri)) await launchUrl(uri);
+                },
+              ),
             const SizedBox(height: AppSpacing.md),
 
             if (u.whatsapp != null) ...[

@@ -79,9 +79,11 @@ class _DossieAtendimentosPageState extends ConsumerState<DossieAtendimentosPage>
       ),
       body: async.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(atendimentosProvider),
+        error: (_, __) => const EmptyView(
+          icon: Icons.event_busy_outlined,
+          title: 'Sem atendimentos registrados',
+          message:
+              'Seus atendimentos na rede pública aparecem aqui assim que forem lançados pela UBS.',
         ),
         data: (lista) {
           final filtrada = _filtroTipo == 'TODOS'
@@ -220,12 +222,16 @@ class _AtendimentoCard extends StatelessWidget {
     final fmtDia = DateFormat('dd', 'pt_BR');
     final fmtMes = DateFormat('MMM', 'pt_BR');
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border.all(color: AppColors.slate200, width: 1),
-      ),
-      child: Column(
+    return Material(
+      color: AppColors.white,
+      child: InkWell(
+        onTap: () => context.push('/dossie/atendimento/${a.id}'),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            border: Border.all(color: AppColors.slate200, width: 1),
+          ),
+          child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Header com data destacada + tipo
@@ -328,10 +334,12 @@ class _AtendimentoCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text(
-                            a.profissionalEspecialidade,
-                            style: AppTypography.bodyMedium,
-                          ),
+                          if (a.profissionalEspecialidade != null &&
+                              a.profissionalEspecialidade!.isNotEmpty)
+                            Text(
+                              a.profissionalEspecialidade!,
+                              style: AppTypography.bodyMedium,
+                            ),
                         ],
                       ),
                     ),
@@ -396,6 +404,8 @@ class _AtendimentoCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+        ),
       ),
     );
   }

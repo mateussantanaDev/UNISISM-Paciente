@@ -1,7 +1,7 @@
 name: unisism_paciente
 description: "UNISISM - App do Paciente. Acompanhamento de encaminhamentos, dossie medico, TFD e notificacoes da Secretaria de Saude."
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+1
 
 environment:
   sdk: ^3.11.5
@@ -30,10 +30,13 @@ dependencies:
   # Auth & forms
   mask_text_input_formatter: ^2.9.0
 
-  # Push notifications
-  firebase_core: ^3.8.0
-  firebase_messaging: ^15.1.5
+  # Push notifications (ntfy.sh self-hosted · sem vendor lock-in)
+  # - flutter_local_notifications: apresenta notifs visuais (foreground/background)
+  # - web_socket_channel: subscreve topic ntfy via WSS
+  # - uuid: gera topic UUID v4 único por dispositivo
   flutter_local_notifications: ^18.0.1
+  web_socket_channel: ^3.0.1
+  uuid: ^4.5.1
 
   # Permissions
   permission_handler: ^11.3.1
@@ -77,9 +80,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  assets:
-    - assets/images/
-    - assets/icons/
+  # Diretórios de imagens/ícones — habilitar quando houver assets próprios.
+  # O design system hoje usa ícones do Material e cores via theme.
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/
 
   fonts:
     - family: Inter

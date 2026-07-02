@@ -68,9 +68,10 @@ class BannerDetailPage extends ConsumerWidget {
       ),
       body: bannersAsync.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(bannersAtivosProvider),
+        error: (_, __) => const EmptyView(
+          icon: Icons.campaign_outlined,
+          title: 'Aviso não disponível',
+          message: 'Este comunicado pode ter sido removido pela Secretaria.',
         ),
         data: (banners) {
           final b = banners

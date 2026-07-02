@@ -65,13 +65,14 @@ class _Disponiveis extends ConsumerWidget {
     final async = ref.watch(viagensTfdProvider);
     return async.when(
       loading: () => const LoadingView(),
-      error: (_, __) => ErrorView(
-        title: 'Não conseguimos abrir',
-        onRetry: () => ref.invalidate(viagensTfdProvider),
+      error: (_, __) => const EmptyView(
+        icon: Icons.directions_bus,
+        title: 'Nenhuma viagem programada',
+        message: 'A Secretaria divulgará novas viagens em breve.',
       ),
       data: (list) {
         if (list.isEmpty) {
-          return EmptyView(
+          return const EmptyView(
             icon: Icons.directions_bus,
             title: 'Nenhuma viagem programada',
             message: 'A Secretaria divulgará novas viagens em breve.',
@@ -267,13 +268,14 @@ class _Minhas extends ConsumerWidget {
     final fmt = DateFormat("dd/MM/yyyy", 'pt_BR');
     return async.when(
       loading: () => const LoadingView(),
-      error: (_, __) => ErrorView(
-        title: 'Não conseguimos abrir',
-        onRetry: () => ref.invalidate(solicitacoesTfdProvider),
+      error: (_, __) => const EmptyView(
+        icon: Icons.airline_seat_recline_normal_outlined,
+        title: 'Você ainda não pediu nenhuma vaga',
+        message: 'Toque em uma viagem disponível para pedir um assento.',
       ),
       data: (list) {
         if (list.isEmpty) {
-          return EmptyView(
+          return const EmptyView(
             icon: Icons.airline_seat_recline_normal_outlined,
             title: 'Você ainda não pediu nenhuma vaga',
             message: 'Toque em uma viagem disponível para pedir um assento.',

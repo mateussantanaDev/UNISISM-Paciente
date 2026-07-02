@@ -26,9 +26,11 @@ class DossieVacinacoesPage extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(vacinacoesProvider),
+        error: (_, __) => const EmptyView(
+          icon: Icons.vaccines_outlined,
+          title: 'Sua carteirinha está vazia',
+          message:
+              'Quando você tomar uma vacina na rede pública, ela aparece aqui.',
         ),
         data: (lista) {
           if (lista.isEmpty) {
@@ -139,13 +141,17 @@ class _VacinaCard extends StatelessWidget {
     final fmt = DateFormat("dd 'de' MMMM 'de' yyyy", 'pt_BR');
     final diasAtras = DateTime.now().difference(v.aplicadaEm).inDays;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border.all(color: AppColors.slate200, width: 1),
-      ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Row(
+    return Material(
+      color: AppColors.white,
+      child: InkWell(
+        onTap: () => context.push('/dossie/vacinacao/${v.id}'),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            border: Border.all(color: AppColors.slate200, width: 1),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Ícone check verde
@@ -198,25 +204,61 @@ class _VacinaCard extends StatelessWidget {
                   icon: Icons.location_on_outlined,
                   text: v.localAplicacao,
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  color: AppColors.slate50,
-                  child: Text(
-                    'LOTE ${v.lote}',
-                    style: AppTypography.labelInstitucional.copyWith(
-                      fontFamily: AppTypography.mono,
-                      letterSpacing: 1,
+                if (v.aplicadorNome != null && v.aplicadorNome!.isNotEmpty)
+                  _Linha(
+                    icon: Icons.person_outline,
+                    text: 'Aplicado por ${v.aplicadorNome!}',
+                  ),
+                if (v.via != null && v.via!.isNotEmpty)
+                  _Linha(
+                    icon: Icons.colorize_outlined,
+                    text: 'Via ${_viaLabel(v.via!)}',
+                  ),
+                if (v.fabricante != null && v.fabricante!.isNotEmpty)
+                  _Linha(
+                    icon: Icons.factory_outlined,
+                    text: v.fabricante!,
+                  ),
+                if (v.lote != null && v.lote!.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    color: AppColors.slate50,
+                    child: Text(
+                      'LOTE ${v.lote}',
+                      style: AppTypography.labelInstitucional.copyWith(
+                        fontFamily: AppTypography.mono,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
         ],
       ),
+        ),
+      ),
     );
+  }
+
+  static String _viaLabel(String via) {
+    switch (via.toUpperCase()) {
+      case 'INTRAMUSCULAR':
+        return 'intramuscular';
+      case 'SUBCUTANEA':
+        return 'subcutânea';
+      case 'INTRADERMICA':
+        return 'intradérmica';
+      case 'ORAL':
+        return 'oral';
+      case 'INTRANASAL':
+        return 'intranasal';
+      default:
+        return via.toLowerCase();
+    }
   }
 
   String _humanDiff(int dias) {

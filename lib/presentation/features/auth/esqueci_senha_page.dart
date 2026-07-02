@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
+import '../../../core/errors/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
@@ -36,7 +37,10 @@ class _EsqueciSenhaPageState extends ConsumerState<EsqueciSenhaPage> {
       await ref.read(authRepositoryProvider).esqueciSenha(cpf: _cpfCtrl.text);
       if (!mounted) return;
       setState(() => _enviado = true);
-    } catch (e) {
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _erro = e.mensagemAmigavel);
+    } catch (_) {
       if (!mounted) return;
       setState(() => _erro = 'Não conseguimos enviar. Tente de novo em instantes.');
     } finally {

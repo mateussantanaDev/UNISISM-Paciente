@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/errors/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
@@ -58,6 +59,8 @@ class _TfdSolicitarPageState extends ConsumerState<TfdSolicitarPage> {
         const SnackBar(content: Text('Pedido enviado! Aguarde análise.')),
       );
       context.pushReplacement('/tfd/solicitacao/${r.id}');
+    } on ApiException catch (e) {
+      setState(() => _erro = e.mensagemAmigavel);
     } catch (_) {
       setState(() => _erro = 'Não conseguimos enviar. Tente novamente.');
     } finally {

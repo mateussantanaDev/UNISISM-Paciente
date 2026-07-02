@@ -1,42 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../data/models/encaminhamento.dart';
+import '../../../providers/encaminhamento_controller.dart';
 import '../../shared/widgets/widgets.dart';
 
-/// Tela de detalhe do encaminhamento — **dados 100% hard-coded**.
-/// Sem providers, sem async, sem Riverpod. Só widgets stateless.
-class EncaminhamentoDetailPage extends StatelessWidget {
+/// Tela de detalhe do encaminhamento — **dados 100% reais** vindos do backend
+/// via `encaminhamentoByIdProvider(id)`.
+class EncaminhamentoDetailPage extends ConsumerWidget {
   const EncaminhamentoDetailPage({super.key, required this.id});
   final String id;
 
-  // ---------- Dados hard-coded (não dependem de id) ----------
-  static const _protocolo = 'UBS-2026-100137';
-  static const _especialidade = 'Cardiologia';
-  static const _status = 'AGENDADO';
-  static const _statusLabel = 'Consulta marcada';
-  static const _mensagem =
-      'Sua consulta foi marcada. Confira a data e o local abaixo e leve um documento com foto.';
-  static const _prioridade = 'PRIORITARIA';
-  static const _cid10 = 'I10';
-  static const _cid10Descricao = 'Hipertensão essencial';
-  static const _justificativa =
-      'Paciente apresenta hipertensão de difícil controle, em uso de duas classes de anti-hipertensivos.';
-  static const _ubsOrigem = 'UBS Centro - Dr. João Mendes';
-  static const _medico = 'Dr. Ricardo Lima — CRM/BA 12345';
-  static const _localAgendamento =
-      'Hospital Regional de Águas Belas - Ambulatório 3';
-
   @override
-  Widget build(BuildContext context) {
-    final dataAgendamento =
-        DateTime.now().add(const Duration(days: 12)).copyWith(hour: 9, minute: 30);
-    final criadoEm = DateTime.now().subtract(const Duration(days: 8));
-    final aprovadoEm = DateTime.now().subtract(const Duration(hours: 36));
-    final fmt = DateFormat("EEEE, dd 'de' MMMM 'de' yyyy 'às' HH:mm", 'pt_BR');
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncEnc = ref.watch(encaminhamentoByIdProvider(id));
 
     return Scaffold(
       backgroundColor: AppColors.slate50,
@@ -45,35 +27,64 @@ class EncaminhamentoDetailPage extends StatelessWidget {
             icon: const Icon(Icons.arrow_back), onPressed: () => context.pop()),
         title: const Text('Encaminhamento'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        children: [
-          // ---------- Card hero ----------
-          StatusHeroCard(
-            statusKey: _status,
-            statusLabel: _statusLabel,
-            mensagem: _mensagem,
-            protocolo: _protocolo,
-            especialidade: _especialidade,
-            dataConsulta: dataAgendamento,
-            localConsulta: _localAgendamento,
-            prioridade: _prioridade,
-          ),
+      body: asyncEnc.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, __) => EmptyView(
+          icon: Icons.search_off,
+          title: 'Encaminhamento não encontrado',
+          message:
+              'Este encaminhamento não está disponível. Procure sua UBS.',
+        ),
+        data: (enc) => _DetailBody(id: id, enc: enc),
+      ),
+    );
+  }
+}
 
-          const SizedBox(height: AppSpacing.xl),
+class _DetailBody extends StatelessWidget {
+  const _DetailBody({required this.id, required this.enc});
 
-          // ---------- Roadmap (Shopee-style) ----------
-          SectionHeader(label: 'Rastreio do seu pedido'),
-          StatusRoadmap(
-            statusKey: _status,
-            dataCriacao: criadoEm,
-            dataAprovacao: aprovadoEm,
-            dataAgendamento: dataAgendamento,
-          ),
+  final String id;
+  final Encaminhamento enc;
 
-          const SizedBox(height: AppSpacing.xl),
+  @override
+  Widget build(BuildContext context) {
+    final fmt = DateFormat("EEEE, dd 'de' MMMM 'de' yyyy 'às' HH:mm", 'pt_BR');
 
-          // ---------- Bloco da consulta ----------
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      children: [
+        // ---------- Card hero ----------
+        StatusHeroCard(
+          statusKey: enc.status,
+          statusLabel: enc.statusLabel,
+          mensagem: enc.mensagemPaciente,
+          protocolo: enc.protocolo,
+          especialidade: enc.especialidade,
+          dataConsulta: enc.dataAgendamento,
+          localConsulta: enc.localAgendamento,
+          prioridade: enc.prioridade,
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // ---------- Roadmap (Shopee-style) ----------
+        SectionHeader(label: 'Rastreio do seu pedido'),
+        StatusRoadmap(
+          statusKey: enc.status,
+          dataCriacao: enc.criadoEm,
+          dataAprovacao: enc.status == 'APROVADO' ||
+                  enc.status == 'AGENDADO' ||
+                  enc.status == 'CONCLUIDO'
+              ? enc.atualizadoEm
+              : null,
+          dataAgendamento: enc.dataAgendamento,
+        ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // ---------- Bloco da consulta (só se agendado) ----------
+        if (enc.dataAgendamento != null) ...[
           SectionHeader(label: 'Sua consulta'),
           PanelCard(
             accent: PanelAccent.success,
@@ -84,14 +95,16 @@ class EncaminhamentoDetailPage extends StatelessWidget {
                 _Linha(
                   icon: Icons.calendar_today_outlined,
                   label: 'Dia e hora',
-                  valor: fmt.format(dataAgendamento),
+                  valor: fmt.format(enc.dataAgendamento!),
                 ),
-                const Divider(),
-                _Linha(
-                  icon: Icons.location_on_outlined,
-                  label: 'Local',
-                  valor: _localAgendamento,
-                ),
+                if (enc.localAgendamento != null) ...[
+                  const Divider(),
+                  _Linha(
+                    icon: Icons.location_on_outlined,
+                    label: 'Local',
+                    valor: enc.localAgendamento!,
+                  ),
+                ],
                 const Divider(),
                 _Linha(
                   icon: Icons.assignment_outlined,
@@ -102,80 +115,169 @@ class EncaminhamentoDetailPage extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: AppSpacing.xl),
+        ],
 
-          // ---------- Resumo clínico ----------
-          SectionHeader(label: 'Resumo clínico'),
+        // ---------- Motivo de rejeição (se rejeitado) ----------
+        if (enc.status == 'REJEITADO' && enc.motivoRejeicao != null) ...[
+          SectionHeader(label: 'Por que foi recusado'),
           PanelCard(
+            accent: PanelAccent.critical,
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Text(enc.motivoRejeicao!,
+                style: AppTypography.bodyLarge),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+
+        // ---------- Pendência aberta ----------
+        if (enc.pendenciasAbertas > 0) ...[
+          SectionHeader(label: 'Pendência aberta'),
+          PanelCard(
+            accent: PanelAccent.warning,
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Row(
               children: [
-                _Linha(
-                  icon: Icons.medical_services_outlined,
-                  label: 'Especialidade',
-                  valor: _especialidade,
-                ),
-                const Divider(),
-                _Linha(
-                  icon: Icons.priority_high_outlined,
-                  label: 'Prioridade',
-                  valor: 'Prioritária',
-                  trailing: StatusBadge.fromPrioridade(_prioridade),
-                ),
-                const Divider(),
-                _Linha(
-                  icon: Icons.tag,
-                  label: 'CID-10',
-                  valor: '$_cid10 — $_cid10Descricao',
-                  mono: true,
-                ),
-                const Divider(),
-                _Linha(
-                  icon: Icons.local_hospital_outlined,
-                  label: 'Médico solicitante',
-                  valor: _medico,
-                ),
-                const Divider(),
-                _Linha(
-                  icon: Icons.home_work_outlined,
-                  label: 'Sua UBS',
-                  valor: _ubsOrigem,
+                const Icon(Icons.error_outline, color: AppColors.amber600),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    'A regulação pediu mais documentos. Procure sua UBS '
+                    'para resolver.',
+                    style: AppTypography.bodyLarge,
+                  ),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: AppSpacing.xl),
+        ],
 
-          // ---------- Justificativa médica ----------
+        // ---------- Resumo clínico ----------
+        SectionHeader(label: 'Resumo clínico'),
+        PanelCard(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _Linha(
+                icon: Icons.medical_services_outlined,
+                label: 'Especialidade',
+                valor: enc.especialidade,
+              ),
+              const Divider(),
+              _Linha(
+                icon: Icons.priority_high_outlined,
+                label: 'Prioridade',
+                valor: _prioridadeLabel(enc.prioridade),
+                trailing: StatusBadge.fromPrioridade(enc.prioridade),
+              ),
+              if (enc.cid10 != null) ...[
+                const Divider(),
+                _Linha(
+                  icon: Icons.tag,
+                  label: 'CID-10',
+                  valor: enc.cid10Descricao != null
+                      ? '${enc.cid10} — ${enc.cid10Descricao}'
+                      : enc.cid10!,
+                  mono: true,
+                ),
+              ],
+              if (enc.medicoSolicitanteNome != null) ...[
+                const Divider(),
+                _Linha(
+                  icon: Icons.local_hospital_outlined,
+                  label: 'Médico solicitante',
+                  valor: enc.medicoSolicitanteNome!,
+                ),
+              ],
+              if (enc.ubsOrigemNome != null) ...[
+                const Divider(),
+                _Linha(
+                  icon: Icons.home_work_outlined,
+                  label: 'Sua UBS',
+                  valor: enc.ubsOrigemNome!,
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        // ---------- Justificativa médica ----------
+        if (enc.justificativaResumida != null) ...[
+          const SizedBox(height: AppSpacing.xl),
           SectionHeader(label: 'Justificativa do médico'),
           PanelCard(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Text(_justificativa, style: AppTypography.bodyLarge),
+            child: Text(enc.justificativaResumida!,
+                style: AppTypography.bodyLarge),
           ),
+        ],
 
+        // ---------- Recomendações (v0.10+) ----------
+        if (enc.recomendacoes.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xl),
-
-          // ---------- Próximas ações ----------
-          SectionHeader(label: 'Próximas ações'),
-
-          IconCard(
-            icon: Icons.timeline,
-            title: 'Ver linha do tempo',
-            subtitle: 'Tudo que aconteceu até agora',
-            iconBg: AppColors.blue900,
-            onTap: () => context.push('/encaminhamento/$id/timeline'),
+          SectionHeader(label: 'Orientações pra essa consulta'),
+          PanelCard(
+            accent: PanelAccent.info,
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: enc.recomendacoes.map((rec) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 6),
+                        child: Icon(Icons.check_circle_outline,
+                            size: 18, color: AppColors.blue900),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(rec, style: AppTypography.bodyLarge),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          IconCard(
-            icon: Icons.folder_open_outlined,
-            title: 'Documentos anexados',
-            subtitle: 'Baixar, abrir ou compartilhar',
-            iconBg: AppColors.slate700,
-            onTap: () => context.push('/encaminhamento/$id/anexos'),
+        ],
+
+        // ---------- Observações da regulação ----------
+        if (enc.observacoesRegulacao != null) ...[
+          const SizedBox(height: AppSpacing.xl),
+          SectionHeader(label: 'Observações da regulação'),
+          PanelCard(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Text(enc.observacoesRegulacao!,
+                style: AppTypography.bodyLarge),
           ),
+        ],
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // ---------- Próximas ações ----------
+        SectionHeader(label: 'Próximas ações'),
+
+        IconCard(
+          icon: Icons.timeline,
+          title: 'Ver linha do tempo',
+          subtitle: 'Tudo que aconteceu até agora',
+          iconBg: AppColors.blue900,
+          onTap: () => context.push('/encaminhamento/$id/timeline'),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        IconCard(
+          icon: Icons.folder_open_outlined,
+          title: 'Documentos anexados',
+          subtitle: 'Baixar, abrir ou compartilhar',
+          iconBg: AppColors.slate700,
+          onTap: () => context.push('/encaminhamento/$id/anexos'),
+        ),
+        if (enc.podeSolicitarTfd) ...[
           const SizedBox(height: AppSpacing.md),
           IconCard(
             icon: Icons.directions_bus_filled,
@@ -185,11 +287,25 @@ class EncaminhamentoDetailPage extends StatelessWidget {
             accent: IconCardAccent.success,
             onTap: () => context.push('/tfd'),
           ),
-
-          const SizedBox(height: AppSpacing.huge),
         ],
-      ),
+
+        const SizedBox(height: AppSpacing.huge),
+      ],
     );
+  }
+
+  static String _prioridadeLabel(String p) {
+    switch (p) {
+      case 'EMERGENCIA':
+        return 'Emergência';
+      case 'URGENTE':
+        return 'Urgente';
+      case 'PRIORITARIA':
+        return 'Prioritária';
+      case 'ELETIVA':
+      default:
+        return 'Eletiva';
+    }
   }
 }
 

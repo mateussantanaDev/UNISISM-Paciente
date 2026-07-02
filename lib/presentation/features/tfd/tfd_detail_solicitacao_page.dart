@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/errors/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
@@ -27,8 +28,27 @@ class TfdDetailSolicitacaoPage extends ConsumerWidget {
     );
     if (ok != true) return;
     if (!context.mounted) return;
-    await ref.read(tfdControllerProvider.notifier).cancelar(id);
-    if (context.mounted) context.pop();
+    try {
+      await ref.read(tfdControllerProvider.notifier).cancelar(id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Solicitação cancelada.')),
+        );
+        context.pop();
+      }
+    } on ApiException catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.mensagemAmigavel)),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não conseguimos cancelar agora. Tente novamente.')),
+        );
+      }
+    }
   }
 
   @override
@@ -44,9 +64,10 @@ class TfdDetailSolicitacaoPage extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const LoadingView(),
-        error: (_, __) => ErrorView(
-          title: 'Não conseguimos abrir',
-          onRetry: () => ref.invalidate(solicitacaoTfdProvider(id)),
+        error: (_, __) => const EmptyView(
+          icon: Icons.help_outline,
+          title: 'Solicitação não encontrada',
+          message: 'Esta solicitação pode ter sido cancelada ou removida.',
         ),
         data: (s) {
           final tone = switch (s.status) {
@@ -119,7 +140,54 @@ class TfdDetailSolicitacaoPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (s.encaminhamentoProtocolo != null) ...[
-                      _sub('Encaminhamento anexado', s.encaminhamentoProtocolo!, mono: true),
+                      if (s.encaminhamentoId != null) ...[
+                        InkWell(
+                          onTap: () => context.push('/encaminhamento/${s.encaminhamentoId}'),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('ENCAMINHAMENTO ANEXADO', style: AppTypography.labelInstitucional),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              s.encaminhamentoProtocolo!,
+                                              style: AppTypography.data.copyWith(
+                                                color: AppColors.blue900,
+                                                decoration: TextDecoration.underline,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: AppSpacing.xs),
+                                          const Icon(
+                                            Icons.open_in_new,
+                                            size: 14,
+                                            color: AppColors.blue900,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: AppColors.slate600,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        _sub('Encaminhamento anexado', s.encaminhamentoProtocolo!, mono: true),
+                      ],
                       const SizedBox(height: AppSpacing.sm),
                     ] else ...[
                       _sub('Anexo de encaminhamento', 'Sem encaminhamento anexado'),

@@ -6,10 +6,13 @@ import '../../presentation/features/auth/esqueci_senha_page.dart';
 import '../../presentation/features/auth/login_page.dart';
 import '../../presentation/features/auth/splash_page.dart';
 import '../../presentation/features/banners/banner_detail_page.dart';
+import '../../presentation/features/dossie/atendimento_detail_page.dart';
 import '../../presentation/features/dossie/dossie_atendimentos_page.dart';
 import '../../presentation/features/dossie/dossie_exames_page.dart';
 import '../../presentation/features/dossie/dossie_page.dart';
 import '../../presentation/features/dossie/dossie_vacinacoes_page.dart';
+import '../../presentation/features/dossie/exame_detail_page.dart';
+import '../../presentation/features/dossie/vacinacao_detail_page.dart';
 import '../../presentation/features/encaminhamento/encaminhamento_anexos_page.dart';
 import '../../presentation/features/encaminhamento/encaminhamento_detail_page.dart';
 import '../../presentation/features/encaminhamento/encaminhamento_timeline_page.dart';
@@ -120,12 +123,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       final location = state.matchedLocation;
       final isAuthRoute = location.startsWith('/login') ||
           location.startsWith('/esqueci-senha');
+      const trocarSenhaPath = '/perfil/trocar-senha';
 
       if (auth.status == AuthStatus.checking) {
         return location == '/' ? null : '/';
       }
       if (!auth.isAuthenticated) {
         return isAuthRoute || location == '/login' ? null : '/login';
+      }
+      // Senha provisória: força o paciente a trocar antes de liberar
+      // qualquer outra rota. Sinalizado por `paciente.senhaProvisoria=true`
+      // vindo do backend no login/me.
+      if (auth.requiresPasswordChange) {
+        return location == trocarSenhaPath ? null : trocarSenhaPath;
       }
       if (isAuthRoute || location == '/') return '/home';
       return null;
@@ -207,6 +217,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/dossie/exames',
         pageBuilder: (_, __) => _page(child: const DossieExamesPage()),
+      ),
+      GoRoute(
+        path: '/dossie/atendimento/:id',
+        pageBuilder: (_, s) => _page(
+            child: AtendimentoDetailPage(id: s.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: '/dossie/vacinacao/:id',
+        pageBuilder: (_, s) => _page(
+            child: VacinacaoDetailPage(id: s.pathParameters['id']!)),
+      ),
+      GoRoute(
+        path: '/dossie/exame/:id',
+        pageBuilder: (_, s) => _page(
+            child: ExameDetailPage(id: s.pathParameters['id']!)),
       ),
 
       // TFD

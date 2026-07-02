@@ -1,59 +1,89 @@
 import '../api/api_client.dart';
 import '../models/paciente.dart';
 import '../models/sessao.dart';
-import 'mock/mock_seed.dart';
 
-/// Auth do paciente. Contrato esperado do backend:
+/// Auth do paciente. Backend real é `unisism-ubs@0.18.0+` em
+/// **`/v1/paciente-app/*`**. 100% wired contra HTTP real — sem mock.
 ///
-/// POST  /auth/paciente/login              { cpf, senha }              → Sessao
-/// POST  /auth/paciente/refresh            { refreshToken }            → Sessao
-/// POST  /auth/paciente/logout                                          → 204
-/// GET   /auth/paciente/me                                              → Paciente
-/// POST  /auth/paciente/esqueci-senha      { cpf }                      → 204
-/// POST  /auth/paciente/redefinir-senha    { token, novaSenha }         → 204
-/// POST  /auth/paciente/registrar-dispositivo { fcmToken, plataforma }  → 204
+/// Endpoints consumidos:
+///   POST  /paciente-app/auth/login              { cpf, senha } → Sessao
+///   POST  /paciente-app/auth/refresh            { refreshToken } → Sessao    (v0.18.0+)
+///   POST  /paciente-app/auth/logout                              → 204
+///   POST  /paciente-app/auth/trocar-senha       { senhaAtual, novaSenha } → 204
+///   POST  /paciente-app/auth/esqueci-senha      { cpf } → 204 (anti-enum, v0.11.0+)
+///   POST  /paciente-app/auth/redefinir-senha    { token, novaSenha } → 204   (v0.11.0+)
+///   POST  /paciente-app/auth/ativar-conta       { cpf, dataNascimento, senha } → 204  (legado)
+///   GET   /paciente-app/me                                      → Paciente
+///   POST  /paciente-app/me/push-token  { endpoint, provider:'NTFY', plataforma } → 204
 abstract class AuthRepository {
   Future<Sessao> login({required String cpf, required String senha});
   Future<Sessao> refresh();
   Future<void> logout();
   Future<Paciente> me();
   Future<void> esqueciSenha({required String cpf});
-  Future<void> redefinirSenha({required String token, required String novaSenha});
-  Future<void> registrarDispositivo({required String fcmToken, required String plataforma});
+  Future<void> redefinirSenha({
+    required String token,
+    required String novaSenha,
+  });
+  Future<void> registrarDispositivo({
+    required String fcmToken,
+    required String plataforma,
+  });
+  Future<void> revogarDispositivo({String? endpoint});
+  Future<void> trocarSenha({
+    required String senhaAtual,
+    required String novaSenha,
+  });
 }
 
 class AuthRepositoryHttp implements AuthRepository {
   AuthRepositoryHttp(this.api);
   final ApiClient api;
 
+  /// CPF para envio: backend aceita formatado, mas mandamos só dígitos
+  /// pra evitar logs sujos e divergência de hashing.
+  static String _digits(String cpf) => cpf.replaceAll(RegExp(r'\D'), '');
+
   @override
   Future<Sessao> login({required String cpf, required String senha}) async {
     final r = await api.post<Map<String, dynamic>>(
-      '/auth/paciente/login',
-      body: {'cpf': cpf, 'senha': senha},
+      '/paciente-app/auth/login',
+      body: {'cpf': _digits(cpf), 'senha': senha},
     );
     final sessao = Sessao.fromJson(r);
-    await api.setTokens(access: sessao.accessToken, refresh: sessao.refreshToken);
+    await api.setTokens(
+      access: sessao.accessToken,
+      refresh: sessao.refreshToken,
+    );
     return sessao;
   }
 
   @override
   Future<Sessao> refresh() async {
     final refresh = await api.getRefreshToken();
-    if (refresh == null) throw StateError('No refresh token');
+    if (refresh == null || refresh.isEmpty) {
+      throw StateError('Sem refresh token. Faça login novamente.');
+    }
     final r = await api.post<Map<String, dynamic>>(
-      '/auth/paciente/refresh',
+      '/paciente-app/auth/refresh',
       body: {'refreshToken': refresh},
     );
     final sessao = Sessao.fromJson(r);
-    await api.setTokens(access: sessao.accessToken, refresh: sessao.refreshToken);
+    await api.setTokens(
+      access: sessao.accessToken,
+      refresh: sessao.refreshToken,
+    );
     return sessao;
   }
 
   @override
   Future<void> logout() async {
+    // Revoga push token ANTES do logout (depois invalida o JWT).
     try {
-      await api.post('/auth/paciente/logout');
+      await revogarDispositivo();
+    } catch (_) {/* não crítico — backend tem cron de cleanup */}
+    try {
+      await api.post('/paciente-app/auth/logout');
     } finally {
       await api.clearTokens();
     }
@@ -61,19 +91,33 @@ class AuthRepositoryHttp implements AuthRepository {
 
   @override
   Future<Paciente> me() async {
-    final r = await api.get<Map<String, dynamic>>('/auth/paciente/me');
+    final r = await api.get<Map<String, dynamic>>('/paciente-app/me');
     return Paciente.fromJson(r);
   }
 
   @override
   Future<void> esqueciSenha({required String cpf}) async {
-    await api.post('/auth/paciente/esqueci-senha', body: {'cpf': cpf});
+    // Backend v0.11.0+ — resposta sempre 204 (anti-enumeration).
+    // Rate-limit 3/h por CPF+IP é tratado no servidor (429 RATE_LIMIT).
+    await api.post(
+      '/paciente-app/auth/esqueci-senha',
+      body: {'cpf': _digits(cpf)},
+    );
   }
 
   @override
-  Future<void> redefinirSenha({required String token, required String novaSenha}) async {
-    await api.post('/auth/paciente/redefinir-senha',
-        body: {'token': token, 'novaSenha': novaSenha});
+  Future<void> redefinirSenha({
+    required String token,
+    required String novaSenha,
+  }) async {
+    // Backend v0.11.0+. App recebe `token` via deep-link do email.
+    // Erros possíveis:
+    //   404 TOKEN_INVALIDO · 401 TOKEN_EXPIRADO · 409 TOKEN_JA_USADO
+    //   422 SENHA_FRACA · 422 SENHA_IGUAL_ATUAL · 429 RATE_LIMIT
+    await api.post(
+      '/paciente-app/auth/redefinir-senha',
+      body: {'token': token, 'novaSenha': novaSenha},
+    );
   }
 
   @override
@@ -81,68 +125,46 @@ class AuthRepositoryHttp implements AuthRepository {
     required String fcmToken,
     required String plataforma,
   }) async {
-    await api.post('/auth/paciente/registrar-dispositivo',
-        body: {'fcmToken': fcmToken, 'plataforma': plataforma});
-  }
-}
-
-class AuthRepositoryMock implements AuthRepository {
-  AuthRepositoryMock(this.api);
-  final ApiClient api;
-
-  @override
-  Future<Sessao> login({required String cpf, required String senha}) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (senha != 'senha123') {
-      throw StateError('Credenciais inválidas. Use senha123 para entrar (mock).');
+    // Push via ntfy.sh self-hosted (v0.18+ · sem Firebase).
+    // `fcmToken` aqui é, na verdade, o topic UUID gerado pelo app.
+    // Backend faz UPSERT em paciente_dispositivos e retorna subscribeUrl WSS.
+    final platf = plataforma.toLowerCase().contains('ios') ? 'ios' : 'android';
+    try {
+      await api.post<Map<String, dynamic>>(
+        '/paciente-app/me/push-token',
+        body: {
+          'endpoint': fcmToken,
+          'provider': 'NTFY',
+          'plataforma': platf,
+        },
+      );
+    } catch (_) {
+      // Falha silenciosa: push é nice-to-have, não pode derrubar login.
     }
-    const access = 'mock-access-token';
-    const refresh = 'mock-refresh-token';
-    await api.setTokens(access: access, refresh: refresh);
-    return Sessao(
-      accessToken: access,
-      refreshToken: refresh,
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-      paciente: MockSeed.paciente,
-    );
   }
 
   @override
-  Future<Sessao> refresh() async {
-    return Sessao(
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-      paciente: MockSeed.paciente,
-    );
+  Future<void> revogarDispositivo({String? endpoint}) async {
+    // DELETE /paciente-app/me/push-token { endpoint? }
+    // Sem endpoint: remove TODOS os dispositivos da conta (logout total).
+    // Com endpoint: remove só o específico.
+    try {
+      await api.dio.delete<dynamic>(
+        '/paciente-app/me/push-token',
+        data: endpoint != null ? {'endpoint': endpoint} : null,
+      );
+    } catch (_) {/* falha silenciosa — cron faz cleanup */}
   }
 
   @override
-  Future<void> logout() async {
-    await api.clearTokens();
-  }
-
-  @override
-  Future<Paciente> me() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return MockSeed.paciente;
-  }
-
-  @override
-  Future<void> esqueciSenha({required String cpf}) async {
-    await Future.delayed(const Duration(milliseconds: 700));
-  }
-
-  @override
-  Future<void> redefinirSenha({required String token, required String novaSenha}) async {
-    await Future.delayed(const Duration(milliseconds: 700));
-  }
-
-  @override
-  Future<void> registrarDispositivo({
-    required String fcmToken,
-    required String plataforma,
+  Future<void> trocarSenha({
+    required String senhaAtual,
+    required String novaSenha,
   }) async {
-    // no-op no mock
+    await api.post(
+      '/paciente-app/auth/trocar-senha',
+      body: {'senhaAtual': senhaAtual, 'novaSenha': novaSenha},
+    );
   }
 }
+
