@@ -48,7 +48,7 @@ class PushService {
   /// Default DEV: `http://localhost:8080` (Docker self-host).
   static const _ntfyBaseUrl = String.fromEnvironment(
     'NTFY_BASE_URL',
-    defaultValue: 'http://10.0.0.101:8080',
+    defaultValue: 'http://184.107.179.209:8080',
   );
 
   /// Chave do topic UUID no SharedPreferences.

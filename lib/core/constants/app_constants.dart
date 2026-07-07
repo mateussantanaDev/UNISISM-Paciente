@@ -13,7 +13,13 @@ class AppConstants {
   /// Override via `--dart-define=API_BASE_URL=...`.
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.0.101:3333/v1',
+    defaultValue: 'https://184.107.179.209.nip.io/v1',
+  );
+
+  /// Chave de API para o backend VPS.
+  static const String apiKey = String.fromEnvironment(
+    'API_KEY',
+    defaultValue: '0fry3zmuJY5kg2YjYdFqvE7H4hRmM4KE6DfzH7gDgY0a6BciR2VKwLzTq5BpU7Qn',
   );
 
   /// Versão do app exibida no footer / sobre.

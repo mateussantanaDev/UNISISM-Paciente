@@ -32,6 +32,7 @@ class ApiClient {
         'Content-Type': 'application/json',
         'X-Client-Platform': 'flutter-mobile',
         'X-Client-Version': AppConstants.appVersion,
+        'x-api-key': AppConstants.apiKey,
       },
       validateStatus: (s) => s != null && s < 500,
     ));
@@ -185,6 +186,7 @@ class ApiClient {
           'Content-Type': 'application/json',
           'X-Client-Platform': 'flutter-mobile',
           'X-Client-Version': AppConstants.appVersion,
+          'x-api-key': AppConstants.apiKey,
         },
         validateStatus: (s) => s != null && s < 500,
       ));
