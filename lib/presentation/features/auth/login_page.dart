@@ -21,6 +21,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _cpfCtrl = TextEditingController();
   final _senhaCtrl = TextEditingController();
+  final _senhaFocus = FocusNode();
   final _cpfMask = MaskTextInputFormatter(
     mask: '###.###.###-##',
     filter: {'#': RegExp(r'\d')},
@@ -30,6 +31,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void dispose() {
     _cpfCtrl.dispose();
     _senhaCtrl.dispose();
+    _senhaFocus.dispose();
     super.dispose();
   }
 
@@ -47,10 +49,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final auth = ref.watch(authControllerProvider);
     final loading = auth.status == AuthStatus.signingIn;
 
-    return Scaffold(
-      backgroundColor: AppColors.slate50,
-      body: SafeArea(
-        child: SingleChildScrollView(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: AppColors.slate50,
+        body: SafeArea(
+          child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Center(
             child: ConstrainedBox(
@@ -87,6 +91,29 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       mono: true,
                       autofocus: true,
                       textInputAction: TextInputAction.next,
+                      suffix: ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: _cpfCtrl,
+                        builder: (context, value, _) {
+                          final digits = value.text.replaceAll(RegExp(r'\D'), '');
+                          if (digits.length == 11) {
+                            return IconButton(
+                              icon: const Icon(Icons.arrow_forward, color: AppColors.blue900),
+                              onPressed: () => FocusScope.of(context).requestFocus(_senhaFocus),
+                              tooltip: 'Prosseguir',
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                      onChanged: (v) {
+                        final digits = v.replaceAll(RegExp(r'\D'), '');
+                        if (digits.length == 11) {
+                          FocusScope.of(context).requestFocus(_senhaFocus);
+                        }
+                      },
+                      onSubmitted: (_) {
+                        FocusScope.of(context).requestFocus(_senhaFocus);
+                      },
                       validator: (v) {
                         final raw = (v ?? '').replaceAll(RegExp(r'\D'), '');
                         if (raw.isEmpty) return 'Informe seu CPF';
@@ -101,6 +128,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       hint: 'Digite sua senha',
                       obscureText: true,
                       textInputAction: TextInputAction.done,
+                      focusNode: _senhaFocus,
                       onSubmitted: (_) => _submit(),
                       validator: (v) {
                         if ((v ?? '').isEmpty) return 'Informe sua senha';
@@ -132,7 +160,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
         ),
       ),
-    );
+    ),);
   }
 }
 

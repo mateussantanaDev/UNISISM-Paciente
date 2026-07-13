@@ -30,6 +30,7 @@ class FormFieldX extends StatefulWidget {
     this.enabled = true,
     this.textInputAction,
     this.textCapitalization = TextCapitalization.none,
+    this.focusNode,
   });
 
   final String label;
@@ -53,6 +54,7 @@ class FormFieldX extends StatefulWidget {
   final bool enabled;
   final TextInputAction? textInputAction;
   final TextCapitalization textCapitalization;
+  final FocusNode? focusNode;
 
   @override
   State<FormFieldX> createState() => _FormFieldXState();
@@ -99,6 +101,7 @@ class _FormFieldXState extends State<FormFieldX> {
           autofocus: widget.autofocus,
           maxLength: widget.maxLength,
           textInputAction: widget.textInputAction,
+          focusNode: widget.focusNode,
           textCapitalization: widget.textCapitalization,
           style: inputStyle,
           decoration: InputDecoration(
