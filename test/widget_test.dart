@@ -45,7 +45,7 @@ void main() {
           ),
         ),
       );
-      expect(find.textContaining('REGULAÇÃO'), findsOneWidget);
+      expect(find.textContaining('SECRETARIA'), findsOneWidget);
     });
   });
 }

@@ -117,7 +117,7 @@ class _Form extends StatelessWidget {
           mono: true,
           hint: '000.000.000-00',
           keyboardType: TextInputType.number,
-          inputFormatters: [cpfMask, FilteringTextInputFormatter.digitsOnly],
+          inputFormatters: [cpfMask],
         ),
         const SizedBox(height: AppSpacing.xl),
         PrimaryButton(

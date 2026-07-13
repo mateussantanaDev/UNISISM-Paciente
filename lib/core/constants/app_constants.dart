@@ -19,7 +19,7 @@ class AppConstants {
   /// Chave de API para o backend VPS.
   static const String apiKey = String.fromEnvironment(
     'API_KEY',
-    defaultValue: '0fry3zmuJY5kg2YjYdFqvE7H4hRmM4KE6DfzH7gDgY0a6BciR2VKwLzTq5BpU7Qn',
+    defaultValue: 'fLi_lF93PiFM2bvcIZEfE2sif8xr9or8QTlheT2RvIcjus2-j50OQ5nW-eF_Rx5x',
   );
 
   /// Versão do app exibida no footer / sobre.

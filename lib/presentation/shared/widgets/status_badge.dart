@@ -99,7 +99,7 @@ enum StatusBadgeSize { small, medium, large }
 const Map<String, ({String label, StatusTone tone, IconData? icon})> _statusMap = {
   'RASCUNHO': (label: 'Rascunho', tone: StatusTone.neutral, icon: Icons.edit_note),
   'AGUARDANDO_REGULACAO': (
-    label: 'Aguardando Regulação',
+    label: 'Aguardando Secretaria',
     tone: StatusTone.warning,
     icon: Icons.hourglass_bottom,
   ),

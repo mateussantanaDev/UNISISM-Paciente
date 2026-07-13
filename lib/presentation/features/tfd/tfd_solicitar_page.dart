@@ -281,7 +281,7 @@ class _PrioridadeEducacaoCard extends StatelessWidget {
                 Text(
                   ativa
                       ? 'Como você anexou seu encaminhamento médico, sua solicitação vai ser analisada antes das demais.'
-                      : 'Anexe seu encaminhamento médico abaixo e seu pedido entra na fila prioritária da regulação.',
+                      : 'Anexe seu encaminhamento médico abaixo e seu pedido entra na fila prioritária da secretaria.',
                   style: AppTypography.bodyMedium.copyWith(
                     color: ativa ? AppColors.amber900 : AppColors.slate900,
                   ),

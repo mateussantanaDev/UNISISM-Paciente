@@ -231,9 +231,9 @@ class TfdDetailSolicitacaoPage extends ConsumerWidget {
   String _explicacao(String status) {
     switch (status) {
       case 'AGUARDANDO':
-        return 'Seu pedido está sendo analisado pela regulação. Você receberá um aviso quando houver resposta.';
+        return 'Seu pedido está sendo analisado pela secretaria. Você receberá um aviso quando houver resposta.';
       case 'RECUSADA':
-        return 'A regulação não pôde aprovar sua vaga. Veja o motivo abaixo e procure sua UBS.';
+        return 'A secretaria não pôde aprovar sua vaga. Veja o motivo abaixo e procure sua UBS.';
       case 'CANCELADA':
         return 'Este pedido foi cancelado.';
       case 'EMBARCADA':

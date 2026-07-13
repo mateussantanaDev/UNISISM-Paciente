@@ -19,7 +19,7 @@ class AjudaPage extends StatelessWidget {
     _Faq(
       pergunta: 'Quanto tempo demora para minha consulta ser marcada?',
       resposta:
-          'Depende da especialidade e da prioridade clínica do seu caso. A regulação municipal analisa cada pedido e marca pela ordem de chegada e gravidade. Você é avisado a cada mudança.',
+          'Depende da especialidade e da prioridade clínica do seu caso. A secretaria municipal analisa cada pedido e marca pela ordem de chegada e gravidade. Você é avisado a cada mudança.',
     ),
     _Faq(
       pergunta: 'O que é o TFD?',
@@ -29,7 +29,7 @@ class AjudaPage extends StatelessWidget {
     _Faq(
       pergunta: 'Anexar o encaminhamento ao pedir TFD adianta?',
       resposta:
-          'Sim! Quando você anexa o encaminhamento, sua solicitação entra na fila prioritária da regulação e é analisada antes das demais.',
+          'Sim! Quando você anexa o encaminhamento, sua solicitação entra na fila prioritária da secretaria e é analisada antes das demais.',
     ),
     _Faq(
       pergunta: 'Recebo lembretes da consulta?',

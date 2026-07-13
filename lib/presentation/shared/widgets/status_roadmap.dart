@@ -103,7 +103,7 @@ class StatusRoadmap extends StatelessWidget {
     final baseSteps = <RoadmapStep>[
       RoadmapStep(
         titulo: 'Encaminhamento criado',
-        descricao: 'Sua UBS registrou o pedido médico e enviou à Regulação.',
+        descricao: 'Sua UBS registrou o pedido médico e enviou à Secretaria.',
         icone: Icons.medical_information_outlined,
         iconeCompleto: Icons.check,
         em: dataCriacao,
@@ -111,9 +111,9 @@ class StatusRoadmap extends StatelessWidget {
       RoadmapStep(
         titulo: s == 'PENDENCIA_DOCUMENTO'
             ? 'Pendência aberta'
-            : 'Em análise pela Regulação',
+            : 'Em análise pela Secretaria',
         descricao: s == 'PENDENCIA_DOCUMENTO'
-            ? 'A regulação pediu mais documentos. Procure sua UBS.'
+            ? 'A secretaria pediu mais documentos. Procure sua UBS.'
             : 'Médicos da Secretaria estão avaliando seu pedido.',
         icone: s == 'PENDENCIA_DOCUMENTO'
             ? Icons.warning_amber_rounded
@@ -123,7 +123,7 @@ class StatusRoadmap extends StatelessWidget {
       ),
       RoadmapStep(
         titulo: 'Solicitação aprovada',
-        descricao: 'A regulação aprovou. Buscando uma data para você.',
+        descricao: 'A secretaria aprovou. Buscando uma data para você.',
         icone: Icons.thumb_up_outlined,
         iconeCompleto: Icons.check,
         em: dataAprovacao,
@@ -153,7 +153,7 @@ class StatusRoadmap extends StatelessWidget {
         RoadmapStep(
           titulo: 'Solicitação recusada',
           descricao: motivoRejeicao ??
-              'A regulação não pôde aprovar seu encaminhamento.',
+              'A secretaria não pôde aprovar seu encaminhamento.',
           icone: Icons.cancel,
           iconeCompleto: Icons.cancel,
           state: RoadmapState.rejected,

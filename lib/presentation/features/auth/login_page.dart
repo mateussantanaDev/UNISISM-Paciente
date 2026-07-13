@@ -83,7 +83,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _cpfCtrl,
                       hint: '000.000.000-00',
                       keyboardType: TextInputType.number,
-                      inputFormatters: [_cpfMask, FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [_cpfMask],
                       mono: true,
                       autofocus: true,
                       textInputAction: TextInputAction.next,

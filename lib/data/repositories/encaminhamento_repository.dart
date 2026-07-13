@@ -1,3 +1,4 @@
+import '../../core/services/push_service.dart';
 import '../api/api_client.dart';
 import '../models/encaminhamento.dart';
 
@@ -55,6 +56,10 @@ class EncaminhamentoRepositoryHttp implements EncaminhamentoRepository {
         .toList();
     final encs = _cache.map((c) => c.enc).toList()
       ..sort((a, b) => b.atualizadoEm.compareTo(a.atualizadoEm));
+
+    // Sincroniza lembretes locais para consultas agendadas (3 dias antes)
+    await PushService.instance.syncAppointmentReminders(encs);
+
     return encs;
   }
 

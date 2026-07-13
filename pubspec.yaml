@@ -57,6 +57,7 @@ dependencies:
 
   # Logging
   logger: ^2.5.0
+  timezone: ^0.10.1
 
   # Serialization
   json_annotation: ^4.9.0

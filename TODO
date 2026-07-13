@@ -1,2 +1,5 @@
-- Trocar regulacao por secretaria
-- com 3 dias antes do antendimento agendado disparar notificacao para lembrar o paciente
+- [x] Trocar regulacao por secretaria
+- [x] com 3 dias antes do antendimento agendado disparar notificacao para lembrar o paciente
+- [x] corrigir input de cpf q esta errado, quando vou digitar o cpf esta bugando e digitando errado
+
+534741318926

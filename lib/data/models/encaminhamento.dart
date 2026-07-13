@@ -67,9 +67,9 @@ class Encaminhamento {
       case 'RASCUNHO':
         return 'Sua UBS ainda está montando seu encaminhamento.';
       case 'AGUARDANDO_REGULACAO':
-        return 'Seu encaminhamento foi enviado para a regulação do município. Aguarde análise.';
+        return 'Seu encaminhamento foi enviado para a secretaria do município. Aguarde análise.';
       case 'PENDENCIA_DOCUMENTO':
-        return 'A regulação pediu mais documentos. Procure sua UBS.';
+        return 'A secretaria pediu mais documentos. Procure sua UBS.';
       case 'EM_ANALISE':
         return 'Sua solicitação está sendo analisada pela Secretaria de Saúde.';
       case 'AGUARDANDO_AGENDAMENTO':
@@ -77,7 +77,7 @@ class Encaminhamento {
       case 'AGENDADO':
         return 'Sua consulta foi marcada. Veja a data e o local abaixo.';
       case 'APROVADO':
-        return 'Sua solicitação foi aprovada pela regulação.';
+        return 'Sua solicitação foi aprovada pela secretaria.';
       case 'REJEITADO':
         return 'Sua solicitação foi recusada. Veja o motivo e procure sua UBS.';
       case 'CANCELADO':

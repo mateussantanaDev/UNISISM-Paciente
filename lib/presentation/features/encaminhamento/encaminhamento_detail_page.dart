@@ -142,7 +142,7 @@ class _DetailBody extends StatelessWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
-                    'A regulação pediu mais documentos. Procure sua UBS '
+                    'A secretaria pediu mais documentos. Procure sua UBS '
                     'para resolver.',
                     style: AppTypography.bodyLarge,
                   ),
@@ -246,10 +246,10 @@ class _DetailBody extends StatelessWidget {
           ),
         ],
 
-        // ---------- Observações da regulação ----------
+        // ---------- Observações da secretaria ----------
         if (enc.observacoesRegulacao != null) ...[
           const SizedBox(height: AppSpacing.xl),
-          SectionHeader(label: 'Observações da regulação'),
+          SectionHeader(label: 'Observações da secretaria'),
           PanelCard(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Text(enc.observacoesRegulacao!,

@@ -3,10 +3,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../../data/models/encaminhamento.dart';
 
 /// Push notifications via **ntfy.sh self-hosted** (open-source, MIT)
 /// + `flutter_local_notifications` (apresentação).
@@ -48,7 +53,7 @@ class PushService {
   /// Default DEV: `http://localhost:8080` (Docker self-host).
   static const _ntfyBaseUrl = String.fromEnvironment(
     'NTFY_BASE_URL',
-    defaultValue: 'http://184.107.179.209:8080',
+    defaultValue: 'http://184.107.179.209.nip.io:8080',
   );
 
   /// Chave do topic UUID no SharedPreferences.
@@ -90,6 +95,13 @@ class PushService {
 
   Future<void> init() async {
     if (_initialized) return;
+
+    tz.initializeTimeZones();
+    try {
+      tz.setLocalLocation(tz.getLocation('America/Sao_Paulo'));
+    } catch (e) {
+      _log.w('Não foi possível definir local timezone: $e');
+    }
 
     // ─── 1. Local notifications ────────────────────────────────
     await _local.initialize(
@@ -298,6 +310,84 @@ class PushService {
       ),
       payload: deepLink,
     );
+  }
+
+  /// Agenda uma notificação local para uma data específica.
+  Future<void> scheduleNotification({
+    required int id,
+    required String titulo,
+    required String corpo,
+    required DateTime scheduledDate,
+    String? deepLink,
+  }) async {
+    try {
+      // Cancela agendamento anterior para este ID
+      await _local.cancel(id);
+
+      final tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
+      if (tzDateTime.isBefore(tz.TZDateTime.now(tz.local))) {
+        // Data no passado, não agenda
+        return;
+      }
+
+      await _local.zonedSchedule(
+        id,
+        titulo,
+        corpo,
+        tzDateTime,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'unisism_paciente_default',
+            'Avisos do UNISISM',
+            channelDescription:
+                'Atualizações sobre encaminhamento, TFD e Secretaria de Saúde.',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: deepLink,
+      );
+      _log.i('Notificação agendada com ID $id para: $tzDateTime');
+    } catch (e) {
+      _log.e('Erro ao agendar notificação: $e');
+    }
+  }
+
+  /// Cancela uma notificação agendada.
+  Future<void> cancelScheduledNotification(int id) async {
+    await _local.cancel(id);
+  }
+
+  /// Sincroniza os agendamentos de lembrete (3 dias antes) das consultas agendadas.
+  Future<void> syncAppointmentReminders(List<Encaminhamento> encaminhamentos) async {
+    final fmt = DateFormat("dd/MM/yyyy 'às' HH:mm", 'pt_BR');
+    for (final enc in encaminhamentos) {
+      final notifId = enc.id.hashCode;
+      if (enc.status.toUpperCase() == 'AGENDADO' && enc.dataAgendamento != null) {
+        final reminderTime = enc.dataAgendamento!.subtract(const Duration(days: 3));
+        if (reminderTime.isAfter(DateTime.now())) {
+          await scheduleNotification(
+            id: notifId,
+            titulo: 'Lembrete de Consulta',
+            corpo: 'Sua consulta de ${enc.especialidade} está marcada para ${fmt.format(enc.dataAgendamento!)} no ${enc.localAgendamento ?? "local agendado"}.',
+            scheduledDate: reminderTime,
+            deepLink: '/encaminhamento/${enc.id}',
+          );
+        } else {
+          await cancelScheduledNotification(notifId);
+        }
+      } else {
+        await cancelScheduledNotification(notifId);
+      }
+    }
   }
 
   void dispose() {
