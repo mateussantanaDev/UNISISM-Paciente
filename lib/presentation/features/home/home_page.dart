@@ -288,7 +288,7 @@ class _AcoesGrid extends StatelessWidget {
         title: 'Meu histórico de saúde',
         subtitle: 'Atendimentos, vacinas e exames anteriores',
         accent: IconCardAccent.info,
-        onTap: () => context.push('/dossie'),
+        onTap: () => context.go('/dossie'),
       ),
       IconCard(
         icon: Icons.directions_bus_filled_outlined,
