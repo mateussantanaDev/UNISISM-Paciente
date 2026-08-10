@@ -16,12 +16,14 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>UNISISM Paciente</string>
-	<key>NSUserNotificationUsageDescription</key>
-	<string>Receba avisos sobre seu encaminhamento, agendamentos e respostas da Secretaria de Saúde.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Salvar documentos médicos baixados (laudos, exames, encaminhamentos).</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Mostrar a localização da sua UBS e ajudar a chegar até ela.</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>tel</string>
@@ -30,6 +32,8 @@
 		<string>whatsapp</string>
 		<string>maps</string>
 	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -43,16 +47,12 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Mostrar a localização da sua UBS e ajudar a chegar até ela.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Salvar documentos médicos baixados (laudos, exames, encaminhamentos).</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Receba avisos sobre seu encaminhamento, agendamentos e respostas da Secretaria de Saúde.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -82,16 +82,16 @@
 	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 </dict>
 </plist>
